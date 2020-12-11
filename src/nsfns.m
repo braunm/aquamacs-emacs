@@ -2604,14 +2604,14 @@ On \"multi-monitor\" setups this refers to the height in millimeters for a all p
 
 
 DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
-       doc:  /* Return the width in millimeters of the Nextstep display TERMINAL.
+       doc: /* Return the width in millimeters of the Nextstep display TERMINAL.
 The optional argument TERMINAL specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the width in millimeters for
 all physical monitors associated with TERMINAL. To get information
-for each physical monitor, use `display-monitor-attributes-list'.   */)
+for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
