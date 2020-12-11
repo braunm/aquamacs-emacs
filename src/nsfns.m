@@ -2600,8 +2600,8 @@ for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (display);
-
   return make_number (x_display_pixel_height (dpyinfo) / (92.0/25.4));
+
 }
 
 
@@ -2617,8 +2617,8 @@ for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (display);
-
   return make_number (x_display_pixel_width (dpyinfo) / (92.0/25.4));
+
 }
 
 
