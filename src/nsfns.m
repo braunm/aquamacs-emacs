@@ -2599,15 +2599,9 @@ all physical monitors associated with TERMINAL.  To get information
 for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
-  check_ns_display_info (display);
+  struct ns_display_info *dpyinfo = check_ns_display_info (display);
 
-  NSScreen *screen = ns_get_screen (display);
-
-  CGDirectDisplayID displayID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
-  CGSize physicalSize = CGDisplayScreenSize(displayID);
-
-  // height in mm
-  return make_number ((int) physicalSize.height);
+  return make_number (ns_display_pixel_height (dpyinfo) / (92.0/25.4));
 }
 
 
@@ -2618,19 +2612,13 @@ TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with TERMINAL.  To get information
+all physical monitors associated with TERMINAL. To get information
 for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
-  check_ns_display_info (display);
+  struct ns_display_info *dpyinfo = check_ns_display_info (display);
 
-  NSScreen *screen = ns_get_screen (display);
-
-  CGDirectDisplayID displayID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
-  CGSize physicalSize = CGDisplayScreenSize(displayID);
-
-  // width in mm
-  return make_number ((int) physicalSize.width);
+  return make_number (ns_display_pixel_width (dpyinfo) / (92.0/25.4));
 }
 
 

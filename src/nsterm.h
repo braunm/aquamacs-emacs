@@ -1241,6 +1241,8 @@ extern unsigned long ns_get_pixel (void *img, int x, int y);
 extern void ns_put_pixel (void *img, int x, int y, unsigned long argb);
 extern void ns_set_alpha (void *img, int x, int y, unsigned char a);
 
+extern int ns_display_pixel_height (struct ns_display_info *);
+extern int ns_display_pixel_width (struct ns_display_info *);
 extern int x_display_pixel_height (struct ns_display_info *);
 extern int x_display_pixel_width (struct ns_display_info *);
 
