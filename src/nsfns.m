@@ -2612,7 +2612,7 @@ TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with TERMINAL. To get information
+all physical monitors associated with TERMINAL.  To get information
 for each physical monitor, use `display-monitor-attributes-list'.  */)
   (Lisp_Object display)
 {
