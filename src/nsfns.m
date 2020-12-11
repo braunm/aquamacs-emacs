@@ -2572,7 +2572,12 @@ If omitted or nil, that stands for the selected frame's display.  */)
 }
 
 DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
-       doc: /* SKIP: The original emacs function for a display (all physical monitors together.  */)
+       doc: /*  /* Return the height in millimeters of the Nextstep SCREEN (monitor).
+The optional argument DISPLAY specifies which display to ask about.
+TERMINAL should be a terminal object, a frame or a display name (a string).
+If omitted or nil, that stands for the selected frame's display.
+
+On \"multi-monitor\" setups this refers to the height in millimeters for a single physical monitor.  */)
   (Lisp_Object terminal)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
@@ -2582,7 +2587,13 @@ DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 
 
 
 DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
-       doc:  /* SKIP: The original emacs function for a display (all physical monitors together.  */)
+       doc:  /* Return the width in millimeters of the Nextstep SCREEN (monitor).
+The optional argument DISPLAY specifies which display to ask about.
+TERMINAL should be a terminal object, a frame or a display name (a string).
+If omitted or nil, that stands for the selected frame's display.
+
+On \"multi-monitor\" setups this refers to the width in millimeters for
+all physical monitors associated with a single physical monitor.  */)
   (Lisp_Object terminal)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
@@ -2605,49 +2616,6 @@ the number of physical monitors, use `(length
 {
   check_ns_display_info (terminal);
   return make_number (1);
-}
-
-
-DEFUN ("x-screen-mm-height", Fx_screen_mm_height, Sx_screen_mm_height, 0, 1, 0,
-       doc: /* Return the height in millimeters of the Nextstep SCREEN (monitor).
-The optional argument DISPLAY specifies which display to ask about.
-TERMINAL should be a terminal object, a frame or a display name (a string).
-If omitted or nil, that stands for the selected frame's display.
-
-On \"multi-monitor\" setups this refers to the height in millimeters for a single physical monitor.  */)
-  (Lisp_Object display)
-{
-  check_ns_display_info (display);
-
-  NSScreen *screen = ns_get_screen (display);
-
-  CGDirectDisplayID displayID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
-  CGSize physicalSize = CGDisplayScreenSize(displayID);
-
-  // height in mm
-  return make_number ((int) physicalSize.height);
-}
-
-
-DEFUN ("x-screen-mm-width", Fx_screen_mm_width, Sx_screen_mm_width, 0, 1, 0,
-       doc: /* Return the width in millimeters of the Nextstep SCREEN (monitor).
-The optional argument DISPLAY specifies which display to ask about.
-TERMINAL should be a terminal object, a frame or a display name (a string).
-If omitted or nil, that stands for the selected frame's display.
-
-On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with a single physical monitor.  */)
-  (Lisp_Object display)
-{
-  check_ns_display_info (display);
-
-  NSScreen *screen = ns_get_screen (display);
-
-  CGDirectDisplayID displayID = (CGDirectDisplayID)[[[screen deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
-  CGSize physicalSize = CGDisplayScreenSize(displayID);
-
-  // width in mm
-  return make_number ((int) physicalSize.width);
 }
 
 
@@ -4392,10 +4360,6 @@ be used as the image of the icon representing the frame.  */);
   defsubr (&Sns_frame_edges);
   defsubr (&Sx_display_mm_width);
   defsubr (&Sx_display_mm_height);
-
-  defsubr (&Sx_screen_mm_width);
-  defsubr (&Sx_screen_mm_height);
-
   defsubr (&Sx_display_screens);
   defsubr (&Sx_display_planes);
   defsubr (&Sx_display_color_cells);
