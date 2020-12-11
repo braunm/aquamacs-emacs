@@ -2589,8 +2589,7 @@ the number of physical monitors, use `(length
 
 
 DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
-       doc: /*  /* Return the height in millimeters of the Nextstep SCREEN (monitor).
-The optional argument DISPLAY specifies which display to ask about.
+       doc: /*  /* Return the height in millimeters of the Nextstep display TERMINAL. The optional argument DISPLAY specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
@@ -2603,11 +2602,8 @@ On \"multi-monitor\" setups this refers to the height in millimeters for a singl
 }
 
 
-
-
-
 DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
-       doc:  /* Return the width in millimeters of the Nextstep SCREEN (monitor).
+       doc:  /* Return the width in millimeters of the Nextstep display TERMINAL.
 The optional argument DISPLAY specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
@@ -2620,10 +2616,6 @@ all physical monitors associated with a single physical monitor.  */)
 
   return make_number (ns_display_pixel_width (dpyinfo) / (92.0/25.4));
 }
-
-
-
-
 
 
 DEFUN ("x-display-backing-store", Fx_display_backing_store,

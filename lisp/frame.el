@@ -1637,8 +1637,6 @@ not explicitly specified."
 				  (integer :tag "Height")))
   :group 'frames)
 
-
-
 (declare-function x-display-mm-height "xfns.c" (&optional terminal))
 
 (defun display-mm-height (&optional display)
