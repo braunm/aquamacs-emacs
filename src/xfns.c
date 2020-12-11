@@ -3891,39 +3891,6 @@ If omitted or nil, that stands for the selected frame's display.  */)
   return make_number (ScreenCount (dpyinfo->display));
 }
 
-DEFUN ("x-screen-mm-height", Fx_screen_mm_height, Sx_screen_mm_height, 0, 1, 0,
-       doc: /* Return the height in millimeters of the X display TERMINAL.
-The optional argument TERMINAL specifies which display to ask about.
-TERMINAL should be a terminal object, a frame or a display name (a string).
-If omitted or nil, that stands for the selected frame's display.
-
-On \"multi-monitor\" setups this refers to the height in millimeters for
-all physical monitors associated with TERMINAL.  To get information
-for each physical monitor, use `display-monitor-attributes-list'.  */)
-  (Lisp_Object terminal)
-{
-  struct x_display_info *dpyinfo = check_x_display_info (terminal);
-
-  return make_number (HeightMMOfScreen (dpyinfo->screen));
-}
-
-DEFUN ("x-screen-mm-width", Fx_screen_mm_width, Sx_screen_mm_width, 0, 1, 0,
-       doc: /* Return the width in millimeters of the X display TERMINAL.
-The optional argument TERMINAL specifies which display to ask about.
-TERMINAL should be a terminal object, a frame or a display name (a string).
-If omitted or nil, that stands for the selected frame's display.
-
-On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with TERMINAL.  To get information
-for each physical monitor, use `display-monitor-attributes-list'.  */)
-  (Lisp_Object terminal)
-{
-  struct x_display_info *dpyinfo = check_x_display_info (terminal);
-
-  return make_number (WidthMMOfScreen (dpyinfo->screen));
-}
-
-
 DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
        doc: /* Return the height in millimeters of the X display TERMINAL.
 The optional argument TERMINAL specifies which display to ask about.

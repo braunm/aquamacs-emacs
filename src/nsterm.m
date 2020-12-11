@@ -4776,10 +4776,6 @@ ns_display_pixel_width (struct ns_display_info *dpyinfo)
   return NSWidth (frame);
 }
 
-
-
-
-
 int
 x_display_pixel_height (struct ns_display_info *dpyinfo)
 {

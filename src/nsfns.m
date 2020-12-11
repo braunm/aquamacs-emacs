@@ -2571,6 +2571,23 @@ If omitted or nil, that stands for the selected frame's display.  */)
   return list3i (10, 3, ns_appkit_version_int ());
 }
 
+
+DEFUN ("x-display-screens", Fx_display_screens, Sx_display_screens, 0, 1, 0,
+       doc: /* Return the number of screens on Nextstep display server TERMINAL.
+The optional argument TERMINAL specifies which display to ask about.
+TERMINAL should be a terminal object, a frame or a display name (a string).
+If omitted or nil, that stands for the selected frame's display.
+
+Note: "screen" here is not in Nextstep terminology but in X11's.  For
+the number of physical monitors, use `(length
+\(display-monitor-attributes-list TERMINAL))' instead.  */)
+  (Lisp_Object terminal)
+{
+  check_ns_display_info (terminal);
+  return make_number (1);
+}
+
+
 DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
        doc: /*  /* Return the height in millimeters of the Nextstep SCREEN (monitor).
 The optional argument DISPLAY specifies which display to ask about.
@@ -2584,6 +2601,9 @@ On \"multi-monitor\" setups this refers to the height in millimeters for a singl
 
   return make_number (ns_display_pixel_height (dpyinfo) / (92.0/25.4));
 }
+
+
+
 
 
 DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
@@ -2603,20 +2623,7 @@ all physical monitors associated with a single physical monitor.  */)
 
 
 
-DEFUN ("x-display-screens", Fx_display_screens, Sx_display_screens, 0, 1, 0,
-       doc: /* Return the number of screens on Nextstep display server TERMINAL.
-The optional argument TERMINAL specifies which display to ask about.
-TERMINAL should be a terminal object, a frame or a display name (a string).
-If omitted or nil, that stands for the selected frame's display.
 
-Note: "screen" here is not in Nextstep terminology but in X11's.  For
-the number of physical monitors, use `(length
-\(display-monitor-attributes-list TERMINAL))' instead.  */)
-  (Lisp_Object terminal)
-{
-  check_ns_display_info (terminal);
-  return make_number (1);
-}
 
 
 DEFUN ("x-display-backing-store", Fx_display_backing_store,
@@ -3708,7 +3715,7 @@ Internal use only, use `display-monitor-attributes-list' instead.  */)
           y = (short) fr.origin.y;
           vy = (short) vfr.origin.y;
         }
-
+      else
         {
           // Flip y coordinate as NS has y starting from the bottom.
           y = (short) (primary_display_height - fr.size.height - fr.origin.y);
