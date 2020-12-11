@@ -2589,14 +2589,14 @@ the number of physical monitors, use `(length
 
 
 DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
-       doc: /*  /* Return the height in millimeters of the Nextstep display TERMINAL. The optional argument DISPLAY specifies which display to ask about.
+       doc: /*  /* Return the height in millimeters of the Nextstep display TERMINAL. The optional argument TERMINAL specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the height in millimeters for a single physical monitor.  */)
-  (Lisp_Object terminal)
+  (Lisp_Object display)
 {
-  struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
+  struct ns_display_info *dpyinfo = check_ns_display_info (display);
 
   return make_number (ns_display_pixel_height (dpyinfo) / (92.0/25.4));
 }
@@ -2609,7 +2609,7 @@ TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with a single physical monitor.  */)
+all physical monitors associated with a single physical monitor. To get information for each physical monitor, use `display-monitor-attributes-list'.   */)
   (Lisp_Object terminal)
 {
   struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
