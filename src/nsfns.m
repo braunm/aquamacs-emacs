@@ -2571,6 +2571,26 @@ If omitted or nil, that stands for the selected frame's display.  */)
   return list3i (10, 3, ns_appkit_version_int ());
 }
 
+DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
+       doc: /* SKIP: The original emacs function for a display (all physical monitors together.  */)
+  (Lisp_Object terminal)
+{
+  struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
+
+  return make_number (ns_display_pixel_height (dpyinfo) / (92.0/25.4));
+}
+
+
+DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
+       doc:  /* SKIP: The original emacs function for a display (all physical monitors together.  */)
+  (Lisp_Object terminal)
+{
+  struct ns_display_info *dpyinfo = check_ns_display_info (terminal);
+
+  return make_number (ns_display_pixel_width (dpyinfo) / (92.0/25.4));
+}
+
+
 
 DEFUN ("x-display-screens", Fx_display_screens, Sx_display_screens, 0, 1, 0,
        doc: /* Return the number of screens on Nextstep display server TERMINAL.
@@ -2588,15 +2608,13 @@ the number of physical monitors, use `(length
 }
 
 
-DEFUN ("x-display-mm-height", Fx_display_mm_height, Sx_display_mm_height, 0, 1, 0,
-       doc: /* Return the height in millimeters of the Nextstep display TERMINAL.
-The optional argument TERMINAL specifies which display to ask about.
+DEFUN ("x-screen-mm-height", Fx_screen_mm_height, Sx_screen_mm_height, 0, 1, 0,
+       doc: /* Return the height in millimeters of the Nextstep SCREEN (monitor).
+The optional argument DISPLAY specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
-On \"multi-monitor\" setups this refers to the height in millimeters for
-all physical monitors associated with TERMINAL.  To get information
-for each physical monitor, use `display-monitor-attributes-list'.  */)
+On \"multi-monitor\" setups this refers to the height in millimeters for a single physical monitor.  */)
   (Lisp_Object display)
 {
   check_ns_display_info (display);
@@ -2611,15 +2629,14 @@ for each physical monitor, use `display-monitor-attributes-list'.  */)
 }
 
 
-DEFUN ("x-display-mm-width", Fx_display_mm_width, Sx_display_mm_width, 0, 1, 0,
-       doc: /* Return the width in millimeters of the Nextstep display TERMINAL.
-The optional argument TERMINAL specifies which display to ask about.
+DEFUN ("x-screen-mm-width", Fx_screen_mm_width, Sx_screen_mm_width, 0, 1, 0,
+       doc: /* Return the width in millimeters of the Nextstep SCREEN (monitor).
+The optional argument DISPLAY specifies which display to ask about.
 TERMINAL should be a terminal object, a frame or a display name (a string).
 If omitted or nil, that stands for the selected frame's display.
 
 On \"multi-monitor\" setups this refers to the width in millimeters for
-all physical monitors associated with TERMINAL.  To get information
-for each physical monitor, use `display-monitor-attributes-list'.  */)
+all physical monitors associated with a single physical monitor.  */)
   (Lisp_Object display)
 {
   check_ns_display_info (display);
@@ -3723,7 +3740,7 @@ Internal use only, use `display-monitor-attributes-list' instead.  */)
           y = (short) fr.origin.y;
           vy = (short) vfr.origin.y;
         }
-      else
+
         {
           // Flip y coordinate as NS has y starting from the bottom.
           y = (short) (primary_display_height - fr.size.height - fr.origin.y);
@@ -4375,6 +4392,10 @@ be used as the image of the icon representing the frame.  */);
   defsubr (&Sns_frame_edges);
   defsubr (&Sx_display_mm_width);
   defsubr (&Sx_display_mm_height);
+
+  defsubr (&Sx_screen_mm_width);
+  defsubr (&Sx_screen_mm_height);
+
   defsubr (&Sx_display_screens);
   defsubr (&Sx_display_planes);
   defsubr (&Sx_display_color_cells);

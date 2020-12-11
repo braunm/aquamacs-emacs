@@ -4747,6 +4747,40 @@ ns_judge_scroll_bars (struct frame *f)
    ========================================================================== */
 
 int
+ns_display_pixel_height (struct ns_display_info *dpyinfo)
+{
+  NSArray *screens = [NSScreen screens];
+  NSEnumerator *enumerator = [screens objectEnumerator];
+  NSScreen *screen;
+  NSRect frame;
+
+  frame = NSZeroRect;
+  while ((screen = [enumerator nextObject]) != nil)
+    frame = NSUnionRect (frame, [screen frame]);
+
+  return NSHeight (frame);
+}
+
+int
+ns_display_pixel_width (struct ns_display_info *dpyinfo)
+{
+  NSArray *screens = [NSScreen screens];
+  NSEnumerator *enumerator = [screens objectEnumerator];
+  NSScreen *screen;
+  NSRect frame;
+
+  frame = NSZeroRect;
+  while ((screen = [enumerator nextObject]) != nil)
+    frame = NSUnionRect (frame, [screen frame]);
+
+  return NSWidth (frame);
+}
+
+
+
+
+
+int
 x_display_pixel_height (struct ns_display_info *dpyinfo)
 {
   NSArray *screens = [NSScreen screens];

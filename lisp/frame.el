@@ -1637,6 +1637,46 @@ not explicitly specified."
 				  (integer :tag "Height")))
   :group 'frames)
 
+(defun screen-mm-height (&optional display)
+  "Return the height of DISPLAY's screen in millimeters.
+If the information is unavailable, this function returns nil.
+DISPLAY can be a display name or a frame.
+If DISPLAY is omitted or nil, it defaults to the selected frame's display.
+
+You can override what the system thinks the result should be by
+adding an entry to `display-mm-dimensions-alist'.
+
+For graphical terminals, note that on \"multi-monitor\" setups this
+refers to the height in millimeters for all physical monitors
+associated with DISPLAY.  To get information for each physical
+monitor, use `display-monitor-attributes-list'."
+  (and (memq (framep-on-display display) '(x w32 ns))
+       (or (cddr (assoc (or display (frame-parameter nil 'display))
+			display-mm-dimensions-alist))
+	   (cddr (assoc t display-mm-dimensions-alist))
+	   (x-screen-mm-height display))))
+
+(declare-function x-screen-mm-width "xfns.c" (&optional terminal))
+
+(defun screen-mm-width (&optional display)
+  "Return the width of DISPLAY's screen in millimeters.
+If the information is unavailable, this function returns nil.
+DISPLAY can be a display name or a frame.
+If DISPLAY is omitted or nil, it defaults to the selected frame's display.
+
+You can override what the system thinks the result should be by
+adding an entry to `display-mm-dimensions-alist'.
+
+For graphical terminals, note that on \"multi-monitor\" setups this
+refers to the width in millimeters for all physical monitors
+associated with DISPLAY.  To get information for each physical
+monitor, use `display-monitor-attributes-list'."
+  (and (memq (framep-on-display display) '(x w32 ns))
+       (or (cadr (assoc (or display (frame-parameter nil 'display))
+			display-mm-dimensions-alist))
+	   (cadr (assoc t display-mm-dimensions-alist))
+	   (x-screen-mm-width display))))
+
 (declare-function x-display-mm-height "xfns.c" (&optional terminal))
 
 (defun display-mm-height (&optional display)
