@@ -24,6 +24,7 @@ along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "character.h"
 
+
 #ifdef HAVE_X_WINDOWS
 
 #include <X11/Xlib.h>
@@ -57,6 +58,8 @@ xstrcasecmp (char const *a, char const *b)
   return c_strcasecmp (a, b);
 }
 
+
+
 #ifdef HAVE_X_WINDOWS
 #include <X11/Xresource.h> /* for XrmDatabase */
 typedef struct x_display_info Display_Info;
@@ -77,8 +80,20 @@ typedef HDC XImagePtr_or_DC;
 /* Following typedef needed to accommodate the MSDOS port, believe it or not.  */
 typedef struct ns_display_info Display_Info;
 typedef Pixmap XImagePtr;
+//typedef XImage XImagePtr;
 typedef XImagePtr XImagePtr_or_DC;
 #endif
+
+//#ifdef HAVE_MACGUI
+//#include "macgui.h"
+#include <CoreGraphics/CGImage.h> // for CGImageRef
+//typedef struct mac_display_info Display_Info;
+typedef struct ns_display_info mac_display_info; // MB: SAME THING?
+/* Mac equivalent of XImage.  */
+typedef Pixmap XImagePtr;
+//typedef XImage XImagePtr;
+typedef XImagePtr XImagePtr_or_DC;
+//#endif
 
 #ifdef HAVE_WINDOW_SYSTEM
 # include <time.h>
@@ -3015,6 +3030,15 @@ struct image
      valid, respectively. */
   bool_bf background_valid : 1, background_transparent_valid : 1;
 
+  //#ifdef HAVE_MACGUI
+  /* Target backing scale factor (<= 2) that this image is dedicated
+     to.  0 means it is not dedicated to any particular one.  */
+  unsigned target_backing_scale : 2;
+  //#endif
+
+
+
+
   /* Width and height of the image.  */
   int width, height;
 
@@ -3063,6 +3087,11 @@ struct image
      during GC.  */
   Lisp_Object lisp_data;
 
+  //#ifdef HAVE_MACGUI
+  /* A place for image types to store Core Graphics image data.  */
+  CGImageRef cg_image;
+  //#endif
+
   /* Hash value of image specification to speed up comparisons.  */
   EMACS_UINT hash;
 
@@ -3071,7 +3100,7 @@ struct image
 
   /* Hash collision chain.  */
   struct image *next, *prev;
-};
+}; // end struct image
 
 
 /* Cache of images.  Each frame has a cache.  X frames with the same

@@ -100,11 +100,26 @@ typedef XGCValues * GC;
 #define GCBackground 0x02
 #define GCFont 0x03
 
+
 #ifdef __OBJC__
 typedef id Pixmap;
 #else
-typedef void *Pixmap;
+//typedef void *Pixmap;
+
+// from emacs-mac/src/macgui.h
+typedef struct _XImage
+{
+  int width, height;		/* size of image */
+  char *data;			/* pointer to image data */
+  int bytes_per_line;		/* accelarator to next line */
+  int bits_per_pixel;		/* bits per pixel (ZPixmap) */
+} *Pixmap;
 #endif
+
+
+
+
+
 
 #ifdef __OBJC__
 typedef NSCursor * Cursor;
