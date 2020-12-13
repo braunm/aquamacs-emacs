@@ -530,9 +530,9 @@ extern OSErr mac_ae_put_lisp (AEDescList *, UInt32, Lisp_Object);
 extern OSErr create_apple_event_from_lisp (Lisp_Object, AppleEvent *);
 extern OSErr init_coercion_handler (void);
 extern OSErr create_apple_event (AEEventClass, AEEventID, AppleEvent *);
-extern Lisp_Object mac_event_parameters_to_lisp (EventRef, UInt32,
-						 const EventParamName *,
-						 const EventParamType *);
+/* extern Lisp_Object mac_event_parameters_to_lisp (EventRef, UInt32, */
+/* 						 const EventParamName *, */
+/* 						 const EventParamType *); */
 extern CFStringRef cfstring_create_with_utf8_cstring (const char *);
 extern CFStringRef cfstring_create_with_string_noencode (Lisp_Object);
 extern CFStringRef cfstring_create_with_string (Lisp_Object);
@@ -549,17 +549,17 @@ extern Lisp_Object cfproperty_list_to_lisp (CFPropertyListRef, int, int);
 extern Lisp_Object cfproperty_list_to_string (CFPropertyListRef,
 					      CFPropertyListFormat);
 extern CFPropertyListRef cfproperty_list_create_with_string (Lisp_Object);
-extern int init_wakeup_fds (void);
-extern void mac_wakeup_from_run_loop_run_once (void);
-extern EventRef mac_peek_next_event (void);
+//extern int init_wakeup_fds (void);
+//extern void mac_wakeup_from_run_loop_run_once (void);
+//extern EventRef mac_peek_next_event (void);
 extern void xrm_merge_string_database (XrmDatabase, const char *);
 extern Lisp_Object xrm_get_resource (XrmDatabase, const char *, const char *);
 extern XrmDatabase xrm_get_preference_database (const char *);
-extern int mac_select (int, fd_set *, fd_set *, fd_set *,
-		       struct timespec const *, sigset_t const *);
-extern void mac_reinvoke_from_shell (int, char *[]);
-extern bool mac_service_provider_registered_p (void);
-extern Lisp_Object mac_carbon_version_string (void);
+//extern int mac_select (int, fd_set *, fd_set *, fd_set *,
+//		       struct timespec const *, sigset_t const *);
+//extern void mac_reinvoke_from_shell (int, char *[]);
+//extern bool mac_service_provider_registered_p (void);
+//extern Lisp_Object mac_carbon_version_string (void);
 
 /* Defined in macappkit.m.  */
 
@@ -699,9 +699,9 @@ extern bool mac_send_action (Lisp_Object, bool);
 extern Lisp_Object mac_osa_language_list (bool);
 extern Lisp_Object mac_osa_compile (Lisp_Object, Lisp_Object, bool,
 				    Lisp_Object *);
-extern Lisp_Object mac_osa_script (Lisp_Object, Lisp_Object, bool, Lisp_Object,
-				   Lisp_Object, ptrdiff_t, Lisp_Object *,
-				   Lisp_Object *);
+/* extern Lisp_Object mac_osa_script (Lisp_Object, Lisp_Object, bool, Lisp_Object, */
+/* 				   Lisp_Object, ptrdiff_t, Lisp_Object *, */
+/* 				   Lisp_Object *); */
 extern bool mac_webkit_supports_svg_p (void);
 extern CFArrayRef mac_document_copy_type_identifiers (void);
 extern EmacsDocumentRef mac_document_create_with_url (CFURLRef,

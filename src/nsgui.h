@@ -103,9 +103,9 @@ typedef XGCValues * GC;
 #define GCFont 0x03
 
 
-#ifdef __OBJC__
-typedef id Pixmap;
-#else
+/* #ifdef __OBJC__ */
+/* typedef id Pixmap; */
+//#else
 //typedef void *Pixmap;
 
 // from emacs-mac/src/macgui.h
@@ -116,7 +116,7 @@ typedef struct _XImage
   int bytes_per_line;		/* accelarator to next line */
   int bits_per_pixel;		/* bits per pixel (ZPixmap) */
 } *Pixmap;
-#endif
+//#endif
 
 
 

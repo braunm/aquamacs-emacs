@@ -21,6 +21,7 @@ along with GNU Emacs Mac port.  If not, see <http://www.gnu.org/licenses/>.  */
 #include "blockinput.h"
 
 #include "macterm.h"
+#include "nsgui.h"
 
 #include "character.h"
 #include "frame.h"
@@ -301,101 +302,101 @@ enum {
 		     pressure:[self pressure]];
 }
 
-static void
-mac_cgevent_set_unicode_string_from_event_ref (CGEventRef cgevent,
-					       EventRef eventRef)
-{
-  ByteCount size;
+// static void
+// mac_cgevent_set_unicode_string_from_event_ref (CGEventRef cgevent,
+// 					       EventRef eventRef)
+// {
+//   ByteCount size;
 
-  if (GetEventParameter (eventRef, kEventParamKeyUnicodes,
-			 typeUnicodeText, NULL, 0, &size, NULL) == noErr)
-    {
-      UniChar *text = alloca (size);
+//   if (GetEventParameter (eventRef, kEventParamKeyUnicodes,
+// 			 typeUnicodeText, NULL, 0, &size, NULL) == noErr)
+//     {
+//       UniChar *text = alloca (size);
 
-      if (GetEventParameter (eventRef, kEventParamKeyUnicodes,
-			     typeUnicodeText, NULL, size, NULL, text) == noErr)
-	CGEventKeyboardSetUnicodeString (cgevent, size / sizeof (UniChar),
-					 text);
-    }
-}
+//       if (GetEventParameter (eventRef, kEventParamKeyUnicodes,
+// 			     typeUnicodeText, NULL, size, NULL, text) == noErr)
+// 	CGEventKeyboardSetUnicodeString (cgevent, size / sizeof (UniChar),
+// 					 text);
+//     }
+// }
 
-- (CGEventRef)coreGraphicsEvent
-{
-  CGEventRef event;
-  NSEventType type = [self type];
+// - (CGEventRef)coreGraphicsEvent
+// {
+//   CGEventRef event;
+//   NSEventType type = [self type];
 
-  event = [self CGEvent];
-  if (event)
-    {
-      /* Unicode string is not set if the keyboard event comes from
-	 Screen Sharing on Mac OS X 10.6 and later.  */
-      if (NSEventMaskFromType (type) & (NSEventMaskKeyDown | NSEventMaskKeyUp))
-	{
-	  UniCharCount length;
+//   event = [self CGEvent];
+//   if (event)
+//     {
+//       /* Unicode string is not set if the keyboard event comes from
+// 	 Screen Sharing on Mac OS X 10.6 and later.  */
+//       if (NSEventMaskFromType (type) & (NSEventMaskKeyDown | NSEventMaskKeyUp))
+// 	{
+// 	  UniCharCount length;
 
-	  CGEventKeyboardGetUnicodeString (event, 0, &length, NULL);
-	  if (length == 0)
-	    {
-	      EventRef eventRef = (EventRef) [self eventRef];
+// 	  CGEventKeyboardGetUnicodeString (event, 0, &length, NULL);
+// 	  if (length == 0)
+// 	    {
+// 	      EventRef eventRef = (EventRef) [self eventRef];
 
-	      mac_cgevent_set_unicode_string_from_event_ref (event, eventRef);
-	    }
-	}
-      return event;
-    }
+// 	      mac_cgevent_set_unicode_string_from_event_ref (event, eventRef);
+// 	    }
+// 	}
+//       return event;
+//     }
 
-  event = NULL;
-  if (NSEventMaskFromType (type) & ANY_MOUSE_EVENT_MASK)
-    {
-      CGPoint position = CGPointZero;
+//   event = NULL;
+//   if (NSEventMaskFromType (type) & ANY_MOUSE_EVENT_MASK)
+//     {
+//       CGPoint position = CGPointZero;
 
-      GetEventParameter ((EventRef) [self eventRef], kEventParamMouseLocation,
-			 typeHIPoint, NULL, sizeof (CGPoint), NULL, &position);
-      event = CGEventCreateMouseEvent (NULL, (CGEventType) type, position,
-				       [self buttonNumber]);
-      /* CGEventCreateMouseEvent on Mac OS X 10.4 does not set
-	 type.  */
-      CGEventSetType (event, (CGEventType) type);
-      if (NSEventMaskFromType (type)
-	  & (ANY_MOUSE_DOWN_EVENT_MASK | ANY_MOUSE_UP_EVENT_MASK))
-	{
-	  CGEventSetIntegerValueField (event, kCGMouseEventClickState,
-				       [self clickCount]);
-	  CGEventSetDoubleValueField (event, kCGMouseEventPressure,
-				      [self pressure]);
-	}
-    }
-  else if (NSEventMaskFromType (type) & (NSEventMaskKeyDown | NSEventMaskKeyUp))
-    {
-      event = CGEventCreateKeyboardEvent (NULL, [self keyCode],
-					  type == NSEventTypeKeyDown);
-      CGEventSetIntegerValueField (event, kCGKeyboardEventAutorepeat,
-				   [self isARepeat]);
-#if __LP64__
-      /* This seems to be unnecessary for 32-bit executables.  */
-      {
-	UInt32 keyboard_type;
-	EventRef eventRef = (EventRef) [self eventRef];
+//       GetEventParameter ((EventRef) [self eventRef], kEventParamMouseLocation,
+// 			 typeHIPoint, NULL, sizeof (CGPoint), NULL, &position);
+//       event = CGEventCreateMouseEvent (NULL, (CGEventType) type, position,
+// 				       [self buttonNumber]);
+//       /* CGEventCreateMouseEvent on Mac OS X 10.4 does not set
+// 	 type.  */
+//       CGEventSetType (event, (CGEventType) type);
+//       if (NSEventMaskFromType (type)
+// 	  & (ANY_MOUSE_DOWN_EVENT_MASK | ANY_MOUSE_UP_EVENT_MASK))
+// 	{
+// 	  CGEventSetIntegerValueField (event, kCGMouseEventClickState,
+// 				       [self clickCount]);
+// 	  CGEventSetDoubleValueField (event, kCGMouseEventPressure,
+// 				      [self pressure]);
+// 	}
+//     }
+//   else if (NSEventMaskFromType (type) & (NSEventMaskKeyDown | NSEventMaskKeyUp))
+//     {
+//       event = CGEventCreateKeyboardEvent (NULL, [self keyCode],
+// 					  type == NSEventTypeKeyDown);
+//       CGEventSetIntegerValueField (event, kCGKeyboardEventAutorepeat,
+// 				   [self isARepeat]);
+// #if __LP64__
+//       /* This seems to be unnecessary for 32-bit executables.  */
+//       {
+// 	UInt32 keyboard_type;
+// 	EventRef eventRef = (EventRef) [self eventRef];
 
-	mac_cgevent_set_unicode_string_from_event_ref (event, eventRef);
-	if (GetEventParameter (eventRef, kEventParamKeyboardType,
-			       typeUInt32, NULL, sizeof (UInt32), NULL,
-			       &keyboard_type) == noErr)
-	  CGEventSetIntegerValueField (event, kCGKeyboardEventKeyboardType,
-				       keyboard_type);
-      }
-#endif
-    }
-  if (event == NULL)
-    {
-      event = CGEventCreate (NULL);
-      CGEventSetType (event, (CGEventType) type);
-    }
-  CGEventSetFlags (event, (CGEventFlags) [self modifierFlags]);
-  CGEventSetTimestamp (event, [self timestamp] * kSecondScale);
+// 	mac_cgevent_set_unicode_string_from_event_ref (event, eventRef);
+// 	if (GetEventParameter (eventRef, kEventParamKeyboardType,
+// 			       typeUInt32, NULL, sizeof (UInt32), NULL,
+// 			       &keyboard_type) == noErr)
+// 	  CGEventSetIntegerValueField (event, kCGKeyboardEventKeyboardType,
+// 				       keyboard_type);
+//       }
+// #endif
+//     }
+//   if (event == NULL)
+//     {
+//       event = CGEventCreate (NULL);
+//       CGEventSetType (event, (CGEventType) type);
+//     }
+//   CGEventSetFlags (event, (CGEventFlags) [self modifierFlags]);
+//   CGEventSetTimestamp (event, [self timestamp] * kSecondScale);
 
-  return (CGEventRef) CF_AUTORELEASE (event);
-}
+//   return (CGEventRef) CF_AUTORELEASE (event);
+// }
 
 @end				// NSEvent (Emacs)
 
@@ -11711,334 +11712,334 @@ mac_display_copy_info_dictionary_for_cgdisplay (CGDirectDisplayID displayID,
 /************************************************************************
 		 Open Scripting Architecture support
  ************************************************************************/
-static CFMutableArrayRef deferred_key_events;
-@implementation EmacsOSAScript
+// static CFMutableArrayRef deferred_key_events;
+// @implementation EmacsOSAScript
 
-- (NSAppleEventDescriptor *)executeAndReturnError:(NSDictionaryOf (NSString *, id) **)errorInfo
-{
-  if (inhibit_window_system)
-    return [super executeAndReturnError:errorInfo];
-  else
-    {
-      NSAppleEventDescriptor * __block result;
-      NSDictionaryOf (NSString *, id) * __block errorInfo1;
+// - (NSAppleEventDescriptor *)executeAndReturnError:(NSDictionaryOf (NSString *, id) **)errorInfo
+// {
+//   if (inhibit_window_system)
+//     return [super executeAndReturnError:errorInfo];
+//   else
+//     {
+//       NSAppleEventDescriptor * __block result;
+//       NSDictionaryOf (NSString *, id) * __block errorInfo1;
 
-      mac_within_app (^{
-	  result = [super executeAndReturnError:&errorInfo1];
-#if !USE_ARC
-	  if (result == nil)
-	    [errorInfo1 retain];
-	  [result retain];
-#endif
-	});
+//       mac_within_app (^{
+// 	  result = [super executeAndReturnError:&errorInfo1];
+// #if !USE_ARC
+// 	  if (result == nil)
+// 	    [errorInfo1 retain];
+// 	  [result retain];
+// #endif
+// 	});
 
-      if (result == nil)
-	*errorInfo = MRC_AUTORELEASE (errorInfo1);
+//       if (result == nil)
+// 	*errorInfo = MRC_AUTORELEASE (errorInfo1);
 
-      return MRC_AUTORELEASE (result);
-    }
-}
+//       return MRC_AUTORELEASE (result);
+//     }
+// }
 
-- (NSAppleEventDescriptor *)executeAndReturnDisplayValue:(NSAttributedString **)displayValue error:(NSDictionaryOf (NSString *, id) **)errorInfo
-{
-  if (inhibit_window_system)
-    return [super executeAndReturnDisplayValue:displayValue error:errorInfo];
-  else
-    {
-      NSAppleEventDescriptor * __block result;
-      NSAttributedString * __block displayValue1;
-      NSDictionaryOf (NSString *, id) * __block errorInfo1;
+// - (NSAppleEventDescriptor *)executeAndReturnDisplayValue:(NSAttributedString **)displayValue error:(NSDictionaryOf (NSString *, id) **)errorInfo
+// {
+//   if (inhibit_window_system)
+//     return [super executeAndReturnDisplayValue:displayValue error:errorInfo];
+//   else
+//     {
+//       NSAppleEventDescriptor * __block result;
+//       NSAttributedString * __block displayValue1;
+//       NSDictionaryOf (NSString *, id) * __block errorInfo1;
 
-      mac_within_app (^{
-	  result = [super executeAndReturnDisplayValue:&displayValue1
-						 error:&errorInfo1];
-#if !USE_ARC
-	  if (result)
-	    [displayValue1 retain];
-	  else
-	    [errorInfo1 retain];
-	  [result retain];
-#endif
-	});
+//       mac_within_app (^{
+// 	  result = [super executeAndReturnDisplayValue:&displayValue1
+// 						 error:&errorInfo1];
+// #if !USE_ARC
+// 	  if (result)
+// 	    [displayValue1 retain];
+// 	  else
+// 	    [errorInfo1 retain];
+// 	  [result retain];
+// #endif
+// 	});
 
-      if (result)
-	*displayValue = MRC_AUTORELEASE (displayValue1);
-      else
-	*errorInfo = MRC_AUTORELEASE (errorInfo1);
+//       if (result)
+// 	*displayValue = MRC_AUTORELEASE (displayValue1);
+//       else
+// 	*errorInfo = MRC_AUTORELEASE (errorInfo1);
 
-      return MRC_AUTORELEASE (result);
-    }
-}
+//       return MRC_AUTORELEASE (result);
+//     }
+// }
 
-- (NSAppleEventDescriptor *)executeAppleEvent:(NSAppleEventDescriptor *)event error:(NSDictionaryOf (NSString *, id) **)errorInfo
-{
-  if (inhibit_window_system)
-    return [super executeAppleEvent:event error:errorInfo];
-  else
-    {
-      NSAppleEventDescriptor * __block result;
-      NSDictionaryOf (NSString *, id) * __block errorInfo1;
+// - (NSAppleEventDescriptor *)executeAppleEvent:(NSAppleEventDescriptor *)event error:(NSDictionaryOf (NSString *, id) **)errorInfo
+// {
+//   if (inhibit_window_system)
+//     return [super executeAppleEvent:event error:errorInfo];
+//   else
+//     {
+//       NSAppleEventDescriptor * __block result;
+//       NSDictionaryOf (NSString *, id) * __block errorInfo1;
 
-      mac_within_app (^{
-	  result = [super executeAppleEvent:event error:&errorInfo1];
-#if !USE_ARC
-	  if (result == nil)
-	    [errorInfo1 retain];
-	  [result retain];
-#endif
-	});
+//       mac_within_app (^{
+// 	  result = [super executeAppleEvent:event error:&errorInfo1];
+// #if !USE_ARC
+// 	  if (result == nil)
+// 	    [errorInfo1 retain];
+// 	  [result retain];
+// #endif
+// 	});
 
-      if (result == nil)
-	*errorInfo = MRC_AUTORELEASE (errorInfo1);
+//       if (result == nil)
+// 	*errorInfo = MRC_AUTORELEASE (errorInfo1);
 
-      return MRC_AUTORELEASE (result);
-    }
-}
+//       return MRC_AUTORELEASE (result);
+//     }
+// }
 
-@end				// EmacsOSAScript
+// @end				// EmacsOSAScript
 
-Lisp_Object
-mac_osa_language_list (bool long_format_p)
-{
-  Lisp_Object result = Qnil, default_language_props = Qnil;
-  OSALanguage *defaultLanguage = [OSALanguage defaultLanguage];
+// Lisp_Object
+// mac_osa_language_list (bool long_format_p)
+// {
+//   Lisp_Object result = Qnil, default_language_props = Qnil;
+//   OSALanguage *defaultLanguage = [OSALanguage defaultLanguage];
 
-  for (OSALanguage *language in [OSALanguage availableLanguages])
-    {
-      Lisp_Object language_props = [[language name] lispString];
+//   for (OSALanguage *language in [OSALanguage availableLanguages])
+//     {
+//       Lisp_Object language_props = [[language name] lispString];
 
-      if (long_format_p)
-	{
-	  Lisp_Object tmp = list2 (QCfeatures,
-				   make_number ([language features]));
+//       if (long_format_p)
+// 	{
+// 	  Lisp_Object tmp = list2 (QCfeatures,
+// 				   make_number ([language features]));
 
-	  tmp = Fcons (QCmanufacturer,
-		       Fcons (mac_four_char_code_to_string ([language
-							      manufacturer]),
-			      tmp));
-	  tmp = Fcons (QCsub_type,
-		       Fcons (mac_four_char_code_to_string ([language subType]),
-			      tmp));
-	  tmp = Fcons (QCtype,
-		       Fcons (mac_four_char_code_to_string ([language type]),
-			      tmp));
-	  tmp = Fcons (QCversion, Fcons ([[language version] lispString], tmp));
-	  tmp = Fcons (QCinfo, Fcons ([[language info] lispString], tmp));
-	  language_props = Fcons (language_props, tmp);
-	}
-      if (![language isEqual:defaultLanguage])
-	result = Fcons (language_props, result);
-      else
-	default_language_props = language_props;
-    }
-  if (!NILP (default_language_props))
-    result = Fcons (default_language_props, result);
+// 	  tmp = Fcons (QCmanufacturer,
+// 		       Fcons (mac_four_char_code_to_string ([language
+// 							      manufacturer]),
+// 			      tmp));
+// 	  tmp = Fcons (QCsub_type,
+// 		       Fcons (mac_four_char_code_to_string ([language subType]),
+// 			      tmp));
+// 	  tmp = Fcons (QCtype,
+// 		       Fcons (mac_four_char_code_to_string ([language type]),
+// 			      tmp));
+// 	  tmp = Fcons (QCversion, Fcons ([[language version] lispString], tmp));
+// 	  tmp = Fcons (QCinfo, Fcons ([[language info] lispString], tmp));
+// 	  language_props = Fcons (language_props, tmp);
+// 	}
+//       if (![language isEqual:defaultLanguage])
+// 	result = Fcons (language_props, result);
+//       else
+// 	default_language_props = language_props;
+//     }
+//   if (!NILP (default_language_props))
+//     result = Fcons (default_language_props, result);
 
-  return result;
-}
+//   return result;
+// }
 
-static Lisp_Object
-mac_osa_error_info_to_lisp (NSDictionaryOf (NSString *, id) *errorInfo)
-{
-  Lisp_Object result = Qnil;
-  NSString *errorMessage = [errorInfo objectForKey:OSAScriptErrorMessage];
-  NSNumber *errorNumber = [errorInfo objectForKey:OSAScriptErrorNumber];
-  NSString *errorAppName = [errorInfo objectForKey:OSAScriptErrorAppName];
-  NSValue *errorRange = [errorInfo objectForKey:OSAScriptErrorRange];
+// static Lisp_Object
+// mac_osa_error_info_to_lisp (NSDictionaryOf (NSString *, id) *errorInfo)
+// {
+//   Lisp_Object result = Qnil;
+//   NSString *errorMessage = [errorInfo objectForKey:OSAScriptErrorMessage];
+//   NSNumber *errorNumber = [errorInfo objectForKey:OSAScriptErrorNumber];
+//   NSString *errorAppName = [errorInfo objectForKey:OSAScriptErrorAppName];
+//   NSValue *errorRange = [errorInfo objectForKey:OSAScriptErrorRange];
 
-  if (errorRange)
-    {
-      NSRange range = [errorRange rangeValue];
+//   if (errorRange)
+//     {
+//       NSRange range = [errorRange rangeValue];
 
-      result = Fcons (Fcons (Qrange, Fcons (make_number (range.location),
-					    make_number (range.length))),
-		      result);
-    }
-  if (errorAppName)
-    result = Fcons (Fcons (Qapp_name, [errorAppName lispString]), result);
-  if (errorNumber)
-    result = Fcons (Fcons (Qnumber, make_number ([errorNumber intValue])),
-		    result);
-  result = Fcons ((errorMessage ? [errorMessage lispString]
-		   : build_string ("OSA script error")), result);
+//       result = Fcons (Fcons (Qrange, Fcons (make_number (range.location),
+// 					    make_number (range.length))),
+// 		      result);
+//     }
+//   if (errorAppName)
+//     result = Fcons (Fcons (Qapp_name, [errorAppName lispString]), result);
+//   if (errorNumber)
+//     result = Fcons (Fcons (Qnumber, make_number ([errorNumber intValue])),
+// 		    result);
+//   result = Fcons ((errorMessage ? [errorMessage lispString]
+// 		   : build_string ("OSA script error")), result);
 
-  return result;
-}
+//   return result;
+// }
 
-static OSALanguage *
-mac_osa_language_from_lisp (Lisp_Object language)
-{
-  OSALanguage *result;
+// static OSALanguage *
+// mac_osa_language_from_lisp (Lisp_Object language)
+// {
+//   OSALanguage *result;
 
-  if (NILP (language))
-    result = [OSALanguage defaultLanguage];
-  else
-    {
-      NSString *name = [NSString stringWithLispString:language];
-      result = [OSALanguage languageForName:name];
-    }
+//   if (NILP (language))
+//     result = [OSALanguage defaultLanguage];
+//   else
+//     {
+//       NSString *name = [NSString stringWithLispString:language];
+//       result = [OSALanguage languageForName:name];
+//     }
 
-  return result;
-}
+//   return result;
+// }
 
-static EmacsOSAScript *
-mac_osa_create_script_from_file (Lisp_Object filename,
-				 Lisp_Object compiled_p_or_language,
-				 Lisp_Object *error_data)
-{
-  EmacsOSAScript *result;
-  Lisp_Object encoded;
-  NSURL *url;
-  NSAppleEventDescriptor *dataDescriptor;
-  NSDictionaryOf (NSString *, id) *errorInfo = nil;
-  OSALanguage *language;
+// static EmacsOSAScript *
+// mac_osa_create_script_from_file (Lisp_Object filename,
+// 				 Lisp_Object compiled_p_or_language,
+// 				 Lisp_Object *error_data)
+// {
+//   EmacsOSAScript *result;
+//   Lisp_Object encoded;
+//   NSURL *url;
+//   NSAppleEventDescriptor *dataDescriptor;
+//   NSDictionaryOf (NSString *, id) *errorInfo = nil;
+//   OSALanguage *language;
 
-  filename = Fexpand_file_name (filename, Qnil);
-  encoded = ENCODE_FILE (filename);
-  url = [NSURL fileURLWithPath:[NSString stringWithLispString:encoded]];
-  dataDescriptor = [OSAScript scriptDataDescriptorWithContentsOfURL:url];
+//   filename = Fexpand_file_name (filename, Qnil);
+//   encoded = ENCODE_FILE (filename);
+//   url = [NSURL fileURLWithPath:[NSString stringWithLispString:encoded]];
+//   dataDescriptor = [OSAScript scriptDataDescriptorWithContentsOfURL:url];
 
-  if (dataDescriptor == nil)
-    result = nil;
-  else
-    {
-      NSError *error;
+//   if (dataDescriptor == nil)
+//     result = nil;
+//   else
+//     {
+//       NSError *error;
 
-      language = [OSALanguage languageForScriptDataDescriptor:dataDescriptor];
-      if (language == nil)
-	{
-	  if (EQ (compiled_p_or_language, Qt))
-	    {
-	      *error_data =
-		list2 (build_string ("Can't obtain OSA language from file"),
-		       filename);
+//       language = [OSALanguage languageForScriptDataDescriptor:dataDescriptor];
+//       if (language == nil)
+// 	{
+// 	  if (EQ (compiled_p_or_language, Qt))
+// 	    {
+// 	      *error_data =
+// 		list2 (build_string ("Can't obtain OSA language from file"),
+// 		       filename);
 
-	      return nil;
-	    }
-	  language = mac_osa_language_from_lisp (compiled_p_or_language);
-	  if (language == nil)
-	    {
-	      *error_data =
-		list2 (build_string ("OSA language not available"),
-		       compiled_p_or_language);
+// 	      return nil;
+// 	    }
+// 	  language = mac_osa_language_from_lisp (compiled_p_or_language);
+// 	  if (language == nil)
+// 	    {
+// 	      *error_data =
+// 		list2 (build_string ("OSA language not available"),
+// 		       compiled_p_or_language);
 
-	      return nil;
-	    }
-	}
-      result = [[EmacsOSAScript alloc]
-		 initWithScriptDataDescriptor:dataDescriptor fromURL:url
-			     languageInstance:[language sharedLanguageInstance]
-			  usingStorageOptions:OSANull error:&error];
-      if (result == nil)
-	errorInfo = [error userInfo];
-  }
-  if (result == nil)
-    {
-      if (errorInfo)
-	*error_data = mac_osa_error_info_to_lisp (errorInfo);
-      else
-	*error_data =
-	  list2 (build_string ("Can't create OSA script from file"),
-		 filename);
-    }
+// 	      return nil;
+// 	    }
+// 	}
+//       result = [[EmacsOSAScript alloc]
+// 		 initWithScriptDataDescriptor:dataDescriptor fromURL:url
+// 			     languageInstance:[language sharedLanguageInstance]
+// 			  usingStorageOptions:OSANull error:&error];
+//       if (result == nil)
+// 	errorInfo = [error userInfo];
+//   }
+//   if (result == nil)
+//     {
+//       if (errorInfo)
+// 	*error_data = mac_osa_error_info_to_lisp (errorInfo);
+//       else
+// 	*error_data =
+// 	  list2 (build_string ("Can't create OSA script from file"),
+// 		 filename);
+//     }
 
-  return result;
-}
+//   return result;
+// }
 
-static EmacsOSAScript *
-mac_osa_create_script_from_code (Lisp_Object code,
-				 Lisp_Object compiled_p_or_language,
-				 Lisp_Object *error_data)
-{
-  EmacsOSAScript *result;
+// static EmacsOSAScript *
+// mac_osa_create_script_from_code (Lisp_Object code,
+// 				 Lisp_Object compiled_p_or_language,
+// 				 Lisp_Object *error_data)
+// {
+//   EmacsOSAScript *result;
 
-  if (!EQ (compiled_p_or_language, Qt))
-    {
-      OSALanguage *language =
-	mac_osa_language_from_lisp (compiled_p_or_language);
+//   if (!EQ (compiled_p_or_language, Qt))
+//     {
+//       OSALanguage *language =
+// 	mac_osa_language_from_lisp (compiled_p_or_language);
 
-      if (language == nil)
-	{
-	  *error_data = list2 (build_string ("OSA language not available"),
-			       compiled_p_or_language);
+//       if (language == nil)
+// 	{
+// 	  *error_data = list2 (build_string ("OSA language not available"),
+// 			       compiled_p_or_language);
 
-	  return nil;
-	}
-      result = [[EmacsOSAScript alloc]
-		 initWithSource:[NSString stringWithLispString:code]
-			fromURL:nil
-		 languageInstance:[language sharedLanguageInstance]
-		 usingStorageOptions:OSANull];
-      if (result == nil)
-	*error_data =
-	  list2 (build_string ("Can't create OSA script from source"),
-		 code);
-    }
-  else
-    {
-      NSData *data = [NSData dataWithBytes:(SDATA (code))
-				    length:(SBYTES (code))];
-      NSDictionaryOf (NSString *, id) *errorInfo = nil;
-      NSError *error;
+// 	  return nil;
+// 	}
+//       result = [[EmacsOSAScript alloc]
+// 		 initWithSource:[NSString stringWithLispString:code]
+// 			fromURL:nil
+// 		 languageInstance:[language sharedLanguageInstance]
+// 		 usingStorageOptions:OSANull];
+//       if (result == nil)
+// 	*error_data =
+// 	  list2 (build_string ("Can't create OSA script from source"),
+// 		 code);
+//     }
+//   else
+//     {
+//       NSData *data = [NSData dataWithBytes:(SDATA (code))
+// 				    length:(SBYTES (code))];
+//       NSDictionaryOf (NSString *, id) *errorInfo = nil;
+//       NSError *error;
 
-      result = [[EmacsOSAScript alloc] initWithCompiledData:data fromURL:nil
-					usingStorageOptions:OSANull
-						      error:&error];
-      if (result == nil)
-	errorInfo = [error userInfo];
-      if (result == nil)
-	{
-	  if (errorInfo)
-	    *error_data = mac_osa_error_info_to_lisp (errorInfo);
-	  else
-	    *error_data =
-	      list2 (build_string ("Can't create OSA script from data"),
-		     code);
-	}
-    }
+//       result = [[EmacsOSAScript alloc] initWithCompiledData:data fromURL:nil
+// 					usingStorageOptions:OSANull
+// 						      error:&error];
+//       if (result == nil)
+// 	errorInfo = [error userInfo];
+//       if (result == nil)
+// 	{
+// 	  if (errorInfo)
+// 	    *error_data = mac_osa_error_info_to_lisp (errorInfo);
+// 	  else
+// 	    *error_data =
+// 	      list2 (build_string ("Can't create OSA script from data"),
+// 		     code);
+// 	}
+//     }
 
-  return result;
-}
+//   return result;
+// }
 
-static EmacsOSAScript *
-mac_osa_create_script (Lisp_Object code_or_file,
-		       Lisp_Object compiled_p_or_language,
-		       bool file_p, Lisp_Object *error_data)
-{
-  if (file_p)
-    return mac_osa_create_script_from_file (code_or_file,
-					    compiled_p_or_language, error_data);
-  else
-    return mac_osa_create_script_from_code (code_or_file,
-					    compiled_p_or_language, error_data);
-}
+// static EmacsOSAScript *
+// mac_osa_create_script (Lisp_Object code_or_file,
+// 		       Lisp_Object compiled_p_or_language,
+// 		       bool file_p, Lisp_Object *error_data)
+// {
+//   if (file_p)
+//     return mac_osa_create_script_from_file (code_or_file,
+// 					    compiled_p_or_language, error_data);
+//   else
+//     return mac_osa_create_script_from_code (code_or_file,
+// 					    compiled_p_or_language, error_data);
+// }
 
-Lisp_Object
-mac_osa_compile (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language,
-		 bool file_p, Lisp_Object *error_data)
-{
-  Lisp_Object result = Qnil;
-  EmacsOSAScript *script;
+// Lisp_Object
+// mac_osa_compile (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language,
+// 		 bool file_p, Lisp_Object *error_data)
+// {
+//   Lisp_Object result = Qnil;
+//   EmacsOSAScript *script;
 
-  *error_data = Qnil;
-  script = mac_osa_create_script (code_or_file, compiled_p_or_language, file_p,
-				  error_data);
-  if (script)
-    {
-      NSDictionaryOf (NSString *, id) *errorInfo;
-      NSData *compiledData = [script compiledDataForType:nil
-				     usingStorageOptions:OSANull
-						   error:&errorInfo];
+//   *error_data = Qnil;
+//   script = mac_osa_create_script (code_or_file, compiled_p_or_language, file_p,
+// 				  error_data);
+//   if (script)
+//     {
+//       NSDictionaryOf (NSString *, id) *errorInfo;
+//       NSData *compiledData = [script compiledDataForType:nil
+// 				     usingStorageOptions:OSANull
+// 						   error:&errorInfo];
 
-      if (compiledData == nil)
-	*error_data = mac_osa_error_info_to_lisp (errorInfo);
-      else
-	result = [compiledData lispString];
-      MRC_RELEASE (script);
-    }
+//       if (compiledData == nil)
+// 	*error_data = mac_osa_error_info_to_lisp (errorInfo);
+//       else
+// 	result = [compiledData lispString];
+//       MRC_RELEASE (script);
+//     }
 
-  return result;
-}
+//   return result;
+// }
 
 static NSAppleEventDescriptor *
 mac_apple_event_descriptor_with_handler_call (Lisp_Object handler_call,
@@ -12104,490 +12105,490 @@ static const CFArrayCallBacks
 cfarray_event_ref_callbacks = {0, cfarray_event_ref_retain,
 			       cfarray_event_ref_release, NULL, NULL};
 
-static void
-mac_begin_defer_key_events (void)
-{
-  deferred_key_events = CFArrayCreateMutable (NULL, 0,
-					      &cfarray_event_ref_callbacks);
-}
+// static void
+// mac_begin_defer_key_events (void)
+// {
+//   deferred_key_events = CFArrayCreateMutable (NULL, 0,
+// 					      &cfarray_event_ref_callbacks);
+// }
 
-static void
-mac_end_defer_key_events (void)
-{
-  EventQueueRef queue = GetMainEventQueue ();
-  CFIndex index, count = CFArrayGetCount (deferred_key_events);
+// static void
+// mac_end_defer_key_events (void)
+// {
+//   EventQueueRef queue = GetMainEventQueue ();
+//   CFIndex index, count = CFArrayGetCount (deferred_key_events);
 
-  for (index = 0; index < count; index++)
-    {
-      EventRef event = (EventRef) CFArrayGetValueAtIndex (deferred_key_events,
-							  index);
+//   for (index = 0; index < count; index++)
+//     {
+//       EventRef event = (EventRef) CFArrayGetValueAtIndex (deferred_key_events,
+// 							  index);
 
-      PostEventToQueue (queue, event, kEventPriorityHigh);
-    }
-  CFRelease (deferred_key_events);
-  deferred_key_events = NULL;
-}
+//       PostEventToQueue (queue, event, kEventPriorityHigh);
+//     }
+//   CFRelease (deferred_key_events);
+//   deferred_key_events = NULL;
+// }
 
-Lisp_Object
-mac_osa_script (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language,
-		bool file_p, Lisp_Object value_form, Lisp_Object handler_call,
-		ptrdiff_t nargs, Lisp_Object *args, Lisp_Object *error_data)
-{
-  Lisp_Object result = Qnil;
-  EmacsOSAScript *script;
-  NSAppleEventDescriptor *desc = nil;
-  NSAttributedString *displayValue;
+// Lisp_Object
+// mac_osa_script (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language,
+// 		bool file_p, Lisp_Object value_form, Lisp_Object handler_call,
+// 		ptrdiff_t nargs, Lisp_Object *args, Lisp_Object *error_data)
+// {
+//   Lisp_Object result = Qnil;
+//   EmacsOSAScript *script;
+//   NSAppleEventDescriptor *desc = nil;
+//   NSAttributedString *displayValue;
 
-  *error_data = Qnil;
-  script = mac_osa_create_script (code_or_file, compiled_p_or_language, file_p,
-				  error_data);
-  if (script)
-    {
-      NSDictionaryOf (NSString *, id) *errorInfo;
-      NSAppleEventDescriptor *event = nil;
+//   *error_data = Qnil;
+//   script = mac_osa_create_script (code_or_file, compiled_p_or_language, file_p,
+// 				  error_data);
+//   if (script)
+//     {
+//       NSDictionaryOf (NSString *, id) *errorInfo;
+//       NSAppleEventDescriptor *event = nil;
 
-      if (![script compileAndReturnError:&errorInfo])
-	*error_data = mac_osa_error_info_to_lisp (errorInfo);
-      else if (!NILP (handler_call))
-	{
-	  event = mac_apple_event_descriptor_with_handler_call (handler_call,
-								nargs, args);
-	  if (event == nil)
-	    *error_data = Fcons (build_string ("Can't create Apple event"),
-				Fcons (handler_call, Flist (nargs, args)));
-	}
-      if (NILP (*error_data))
-	{
-	  mac_begin_defer_key_events ();
-	  if (event)
-	    {
-	      desc = [script executeAppleEvent:event error:&errorInfo];
-	      if (desc && NILP (value_form))
-		displayValue = [script richTextFromDescriptor:desc];
-	    }
-	  else if (NILP (value_form))
-	    desc = [script executeAndReturnDisplayValue:&displayValue
-						  error:&errorInfo];
-	  else
-	    desc = [script executeAndReturnError:&errorInfo];
-	  if (desc == nil)
-	    *error_data = mac_osa_error_info_to_lisp (errorInfo);
-	  mac_end_defer_key_events ();
-	}
-      MRC_RELEASE (script);
-    }
+//       if (![script compileAndReturnError:&errorInfo])
+// 	*error_data = mac_osa_error_info_to_lisp (errorInfo);
+//       else if (!NILP (handler_call))
+// 	{
+// 	  event = mac_apple_event_descriptor_with_handler_call (handler_call,
+// 								nargs, args);
+// 	  if (event == nil)
+// 	    *error_data = Fcons (build_string ("Can't create Apple event"),
+// 				Fcons (handler_call, Flist (nargs, args)));
+// 	}
+//       if (NILP (*error_data))
+// 	{
+// 	  mac_begin_defer_key_events ();
+// 	  if (event)
+// 	    {
+// 	      desc = [script executeAppleEvent:event error:&errorInfo];
+// 	      if (desc && NILP (value_form))
+// 		displayValue = [script richTextFromDescriptor:desc];
+// 	    }
+// 	  else if (NILP (value_form))
+// 	    desc = [script executeAndReturnDisplayValue:&displayValue
+// 						  error:&errorInfo];
+// 	  else
+// 	    desc = [script executeAndReturnError:&errorInfo];
+// 	  if (desc == nil)
+// 	    *error_data = mac_osa_error_info_to_lisp (errorInfo);
+// 	  mac_end_defer_key_events ();
+// 	}
+//       MRC_RELEASE (script);
+//     }
 
-  if (desc)
-    {
-      if (NILP (value_form))
-	result = [[displayValue string] lispString];
-      else
-	result = mac_aedesc_to_lisp ([desc aeDesc]);
-    }
+//   if (desc)
+//     {
+//       if (NILP (value_form))
+// 	result = [[displayValue string] lispString];
+//       else
+// 	result = mac_aedesc_to_lisp ([desc aeDesc]);
+//     }
 
-  return result;
-}
+//   return result;
+// }
 
 
 /************************************************************************
 			    Image support
  ************************************************************************/
 
-@implementation NSView (Emacs)
+// @implementation NSView (Emacs)
 
-- (XImagePtr)createXImageFromRect:(NSRect)rect backgroundColor:(NSColor *)color
-		      scaleFactor:(CGFloat)scaleFactor
-{
-  XImagePtr ximg;
-  CGContextRef context;
-  NSGraphicsContext *gcontext;
-  NSAffineTransform *transform;
+// - (XImagePtr)createXImageFromRect:(NSRect)rect backgroundColor:(NSColor *)color
+// 		      scaleFactor:(CGFloat)scaleFactor
+// {
+//   XImagePtr ximg;
+//   CGContextRef context;
+//   NSGraphicsContext *gcontext;
+//   NSAffineTransform *transform;
 
-  ximg = mac_create_pixmap (NSWidth (rect) * scaleFactor,
-			    NSHeight (rect) * scaleFactor, 0);
-  context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8,
-				   ximg->bytes_per_line,
-				   mac_cg_color_space_rgb,
-				   kCGImageAlphaNoneSkipFirst
-				   | kCGBitmapByteOrder32Host);
-  if (context == NULL)
-    {
-      XFreePixmap (NULL, ximg);
+//   ximg = mac_create_pixmap (NSWidth (rect) * scaleFactor,
+// 			    NSHeight (rect) * scaleFactor, 0);
+//   context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8,
+// 				   ximg->bytes_per_line,
+// 				   mac_cg_color_space_rgb,
+// 				   kCGImageAlphaNoneSkipFirst
+// 				   | kCGBitmapByteOrder32Host);
+//   if (context == NULL)
+//     {
+//       XFreePixmap (NULL, ximg);
 
-      return NULL;
-    }
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101000
-  gcontext = [NSGraphicsContext graphicsContextWithCGContext:context
-						     flipped:NO];
-#else
-  gcontext = [NSGraphicsContext graphicsContextWithGraphicsPort:context
-							flipped:NO];
-#endif
-  transform = [NSAffineTransform transform];
-  [transform scaleBy:scaleFactor];
-  [transform translateXBy:(- NSMinX (rect)) yBy:(- NSMinY (rect))];
-  [NSGraphicsContext saveGraphicsState];
-  NSGraphicsContext.currentContext = gcontext;
-  [transform concat];
-  if (!(self.isOpaque && NSContainsRect (self.bounds, rect)))
-    {
-      [gcontext saveGraphicsState];
-      [(color ? color : [NSColor clearColor]) set];
-      NSRectFill (rect);
-      [gcontext restoreGraphicsState];
-    }
-#ifdef USE_WK_API
-  if ([self isKindOfClass:[WKWebView class]])
-    {
-      WKWebView *webView = (WKWebView *) self;
-      WKSnapshotConfiguration *snapshotConfiguration =
-	[[WKSnapshotConfiguration alloc] init];
-      NSImage * __block image;
-      BOOL __block finished = NO;
+//       return NULL;
+//     }
+// #if MAC_OS_X_VERSION_MIN_REQUIRED >= 101000
+//   gcontext = [NSGraphicsContext graphicsContextWithCGContext:context
+// 						     flipped:NO];
+// #else
+//   gcontext = [NSGraphicsContext graphicsContextWithGraphicsPort:context
+// 							flipped:NO];
+// #endif
+//   transform = [NSAffineTransform transform];
+//   [transform scaleBy:scaleFactor];
+//   [transform translateXBy:(- NSMinX (rect)) yBy:(- NSMinY (rect))];
+//   [NSGraphicsContext saveGraphicsState];
+//   NSGraphicsContext.currentContext = gcontext;
+//   [transform concat];
+//   if (!(self.isOpaque && NSContainsRect (self.bounds, rect)))
+//     {
+//       [gcontext saveGraphicsState];
+//       [(color ? color : [NSColor clearColor]) set];
+//       NSRectFill (rect);
+//       [gcontext restoreGraphicsState];
+//     }
+// #ifdef USE_WK_API
+//   if ([self isKindOfClass:[WKWebView class]])
+//     {
+//       WKWebView *webView = (WKWebView *) self;
+//       WKSnapshotConfiguration *snapshotConfiguration =
+// 	[[WKSnapshotConfiguration alloc] init];
+//       NSImage * __block image;
+//       BOOL __block finished = NO;
 
-      [webView _setOverrideDeviceScaleFactor:scaleFactor];
-      [webView takeSnapshotWithConfiguration:snapshotConfiguration
-			   completionHandler:^(NSImage *snapshotImage,
-					       NSError *error) {
-	  image = MRC_RETAIN (snapshotImage);
-	  finished = YES;
-	}];
-      MRC_RELEASE (snapshotConfiguration);
+//       [webView _setOverrideDeviceScaleFactor:scaleFactor];
+//       [webView takeSnapshotWithConfiguration:snapshotConfiguration
+// 			   completionHandler:^(NSImage *snapshotImage,
+// 					       NSError *error) {
+// 	  image = MRC_RETAIN (snapshotImage);
+// 	  finished = YES;
+// 	}];
+//       MRC_RELEASE (snapshotConfiguration);
 
-      while (!finished)
-	mac_run_loop_run_once (0);
+//       while (!finished)
+// 	mac_run_loop_run_once (0);
 
-      if (image == nil)
-	{
-	  [NSGraphicsContext restoreGraphicsState];
-	  CGContextRelease (context);
-	  XFreePixmap (NULL, ximg);
+//       if (image == nil)
+// 	{
+// 	  [NSGraphicsContext restoreGraphicsState];
+// 	  CGContextRelease (context);
+// 	  XFreePixmap (NULL, ximg);
 
-	  return NULL;
-	}
+// 	  return NULL;
+// 	}
 
-      rect = NSIntersectionRect (rect, self.bounds);
-      [image drawAtPoint:rect.origin fromRect:rect
-	       operation:NSCompositingOperationSourceOver fraction:1];
-      MRC_RELEASE (image);
-    }
-  else
-#endif
-    [self displayRectIgnoringOpacity:rect inContext:gcontext];
-  [NSGraphicsContext restoreGraphicsState];
-  CGContextRelease (context);
+//       rect = NSIntersectionRect (rect, self.bounds);
+//       [image drawAtPoint:rect.origin fromRect:rect
+// 	       operation:NSCompositingOperationSourceOver fraction:1];
+//       MRC_RELEASE (image);
+//     }
+//   else
+// #endif
+//     [self displayRectIgnoringOpacity:rect inContext:gcontext];
+//   [NSGraphicsContext restoreGraphicsState];
+//   CGContextRelease (context);
 
-  return ximg;
-}
+//   return ximg;
+// }
 
-@end				// NSView (Emacs)
+// @end				// NSView (Emacs)
 
-@implementation EmacsSVGLoader
+// @implementation EmacsSVGLoader
 
-- (instancetype)initWithEmacsFrame:(struct frame *)f emacsImage:(struct image *)img
-		checkImageSizeFunc:(bool (*)(struct frame *, int, int))checkImageSize
-		    imageErrorFunc:(void (*)(const char *, ...))imageError
-{
-  self = [super init];
+// - (instancetype)initWithEmacsFrame:(struct frame *)f emacsImage:(struct image *)img
+// 		checkImageSizeFunc:(bool (*)(struct frame *, int, int))checkImageSize
+// 		    imageErrorFunc:(void (*)(const char *, ...))imageError
+// {
+//   self = [super init];
 
-  if (self == nil)
-    return nil;
+//   if (self == nil)
+//     return nil;
 
-  emacsFrame = f;
-  emacsImage = img;
-  checkImageSizeFunc = checkImageSize;
-  imageErrorFunc = imageError;
+//   emacsFrame = f;
+//   emacsImage = img;
+//   checkImageSizeFunc = checkImageSize;
+//   imageErrorFunc = imageError;
 
-  return self;
-}
+//   return self;
+// }
 
-- (NSSize)frameSizeForBoundingBox:(id)boundingBox widthBaseVal:(id)widthBaseVal
-		    heightBaseVal:(id)heightBaseVal imageWidth:(int *)imageWidth
-		      imageHeight:(int *)imageHeight
-{
-  NSNumber *unitType, *num;
-  NSSize frameSize;
-  int width, height;
-  enum {
-	SVG_LENGTHTYPE_PERCENTAGE = 2
-  };
+// - (NSSize)frameSizeForBoundingBox:(id)boundingBox widthBaseVal:(id)widthBaseVal
+// 		    heightBaseVal:(id)heightBaseVal imageWidth:(int *)imageWidth
+// 		      imageHeight:(int *)imageHeight
+// {
+//   NSNumber *unitType, *num;
+//   NSSize frameSize;
+//   int width, height;
+//   enum {
+// 	SVG_LENGTHTYPE_PERCENTAGE = 2
+//   };
 
-  unitType = [widthBaseVal valueForKey:@"unitType"];
-  if (unitType.intValue == SVG_LENGTHTYPE_PERCENTAGE)
-    {
-      frameSize.width =
-	round ([[boundingBox valueForKey:@"x"] doubleValue]
-	       + [[boundingBox valueForKey:@"width"] doubleValue]);
-      num = [widthBaseVal valueForKey:@"valueInSpecifiedUnits"];
-      width = lround (frameSize.width * num.doubleValue / 100);
-    }
-  else
-    {
-      num = [widthBaseVal valueForKey:@"value"];
-      width = lround (num.doubleValue);
-      frameSize.width = width;
-    }
+//   unitType = [widthBaseVal valueForKey:@"unitType"];
+//   if (unitType.intValue == SVG_LENGTHTYPE_PERCENTAGE)
+//     {
+//       frameSize.width =
+// 	round ([[boundingBox valueForKey:@"x"] doubleValue]
+// 	       + [[boundingBox valueForKey:@"width"] doubleValue]);
+//       num = [widthBaseVal valueForKey:@"valueInSpecifiedUnits"];
+//       width = lround (frameSize.width * num.doubleValue / 100);
+//     }
+//   else
+//     {
+//       num = [widthBaseVal valueForKey:@"value"];
+//       width = lround (num.doubleValue);
+//       frameSize.width = width;
+//     }
 
-  unitType = [heightBaseVal valueForKey:@"unitType"];
-  if (unitType.intValue == SVG_LENGTHTYPE_PERCENTAGE)
-    {
-      frameSize.height =
-	round ([[boundingBox valueForKey:@"y"] doubleValue]
-	       + [[boundingBox valueForKey:@"height"] doubleValue]);
-      num = [heightBaseVal valueForKey:@"valueInSpecifiedUnits"];
-      height = lround (frameSize.height * num.doubleValue / 100);
-    }
-  else
-    {
-      num = [heightBaseVal valueForKey:@"value"];
-      height = lround (num.doubleValue);
-      frameSize.height = height;
-    }
+//   unitType = [heightBaseVal valueForKey:@"unitType"];
+//   if (unitType.intValue == SVG_LENGTHTYPE_PERCENTAGE)
+//     {
+//       frameSize.height =
+// 	round ([[boundingBox valueForKey:@"y"] doubleValue]
+// 	       + [[boundingBox valueForKey:@"height"] doubleValue]);
+//       num = [heightBaseVal valueForKey:@"valueInSpecifiedUnits"];
+//       height = lround (frameSize.height * num.doubleValue / 100);
+//     }
+//   else
+//     {
+//       num = [heightBaseVal valueForKey:@"value"];
+//       height = lround (num.doubleValue);
+//       frameSize.height = height;
+//     }
 
-  *imageWidth = width;
-  *imageHeight = height;
+//   *imageWidth = width;
+//   *imageHeight = height;
 
-  return frameSize;
-}
+//   return frameSize;
+// }
 
-- (bool)loadData:(NSData *)data backgroundColor:(NSColor *)backgroundColor
-	 baseURL:(NSURL *)url
-{
-  bool __block result;
+// - (bool)loadData:(NSData *)data backgroundColor:(NSColor *)backgroundColor
+// 	 baseURL:(NSURL *)url
+// {
+//   bool __block result;
 
-  mac_within_app (^{
-      NSRect frameRect = NSMakeRect (0, 0, 100, 100); /* Adjusted later.  */
-      int width = -1, height;
-      CGFloat scaleFactor;
-#ifdef USE_WK_API
-      static WKWebView *webView;
+//   mac_within_app (^{
+//       NSRect frameRect = NSMakeRect (0, 0, 100, 100); /* Adjusted later.  */
+//       int width = -1, height;
+//       CGFloat scaleFactor;
+// #ifdef USE_WK_API
+//       static WKWebView *webView;
 
-      if (!webView)
-	{
-	  WKWebViewConfiguration *configuration =
-	    [[WKWebViewConfiguration alloc] init];
+//       if (!webView)
+// 	{
+// 	  WKWebViewConfiguration *configuration =
+// 	    [[WKWebViewConfiguration alloc] init];
 
-	  configuration.suppressesIncrementalRendering = YES;
-	  webView = [[WKWebView alloc] initWithFrame:frameRect
-				       configuration:configuration];
-	  MRC_RELEASE (configuration);
-	}
-      else
-	webView.frame = frameRect;
-#define DELEGATE navigationDelegate
-      eassert (!webView.DELEGATE);
-      webView.DELEGATE = self;
-      [webView loadData:data MIMEType:@"image/svg+xml"
-	       characterEncodingName:@"UTF-8" baseURL:url];
-#else
-      static WebView *webView;
+// 	  configuration.suppressesIncrementalRendering = YES;
+// 	  webView = [[WKWebView alloc] initWithFrame:frameRect
+// 				       configuration:configuration];
+// 	  MRC_RELEASE (configuration);
+// 	}
+//       else
+// 	webView.frame = frameRect;
+// #define DELEGATE navigationDelegate
+//       eassert (!webView.DELEGATE);
+//       webView.DELEGATE = self;
+//       [webView loadData:data MIMEType:@"image/svg+xml"
+// 	       characterEncodingName:@"UTF-8" baseURL:url];
+// #else
+//       static WebView *webView;
 
-      if (!webView)
-	webView = [[WebView alloc] initWithFrame:frameRect frameName:nil
-				       groupName:nil];
-      else
-	webView.frame = frameRect;
-#define DELEGATE frameLoadDelegate
-      eassert (!webView.DELEGATE);
-      webView.DELEGATE = self;
-      webView.mainFrame.frameView.allowsScrolling = NO;
-      [webView setValue:backgroundColor forKey:@"backgroundColor"];
-      [webView.mainFrame loadData:data MIMEType:@"image/svg+xml"
-		 textEncodingName:nil baseURL:url];
-#endif
+//       if (!webView)
+// 	webView = [[WebView alloc] initWithFrame:frameRect frameName:nil
+// 				       groupName:nil];
+//       else
+// 	webView.frame = frameRect;
+// #define DELEGATE frameLoadDelegate
+//       eassert (!webView.DELEGATE);
+//       webView.DELEGATE = self;
+//       webView.mainFrame.frameView.allowsScrolling = NO;
+//       [webView setValue:backgroundColor forKey:@"backgroundColor"];
+//       [webView.mainFrame loadData:data MIMEType:@"image/svg+xml"
+// 		 textEncodingName:nil baseURL:url];
+// #endif
 
-      /* webView.isLoading is not sufficient if we have <image
-	 xlink:href=... /> */
-      while (!isLoaded)
-	mac_run_loop_run_once (0);
+//       /* webView.isLoading is not sufficient if we have <image
+// 	 xlink:href=... /> */
+//       while (!isLoaded)
+// 	mac_run_loop_run_once (0);
 
-      @try
-	{
-	  id boundingBox, widthBaseVal, heightBaseVal;
-#ifdef USE_WK_API
-	  NSString * __block jsonString;
-	  BOOL __block finished = NO;
-	  CGFloat components[4];
-	  NSColor *colorInSRGB =
-	    [backgroundColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-	  NSString *script;
+//       @try
+// 	{
+// 	  id boundingBox, widthBaseVal, heightBaseVal;
+// #ifdef USE_WK_API
+// 	  NSString * __block jsonString;
+// 	  BOOL __block finished = NO;
+// 	  CGFloat components[4];
+// 	  NSColor *colorInSRGB =
+// 	    [backgroundColor colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+// 	  NSString *script;
 
-	  [colorInSRGB getComponents:components];
-	  script = [NSString stringWithFormat:@"\
-const rootElement = document.rootElement;				\
-rootElement.style.backgroundColor = '#%02x%02x%02x';			\
-function filter (obj, names) {						\
-  return names.reduce ((acc, nm) => {acc[nm] = obj[nm]; return acc;}, {}); \
-}									\
-JSON.stringify (['width', 'height'].reduce				\
-  ((obj, dim) => {							\
-     obj[dim + 'BaseVal'] =						\
-       filter (rootElement[dim].baseVal,				\
-	       ['unitType', 'value', 'valueInSpecifiedUnits']);		\
-     return obj;							\
-   }, {boundingBox: filter (rootElement.getBBox (),			\
-			    ['x', 'y', 'width', 'height'])}))",
-				       (int) (components[0] * 255 + 0.5),
-				       (int) (components[1] * 255 + 0.5),
-				       (int) (components[2] * 255 + 0.5)];
-	  [webView evaluateJavaScript:script
-		    completionHandler:^(id scriptResult, NSError *error) {
-	      if ([scriptResult isKindOfClass:NSString.class])
-		jsonString = MRC_RETAIN (scriptResult);
-	      else
-		jsonString = nil;
-	      finished = YES;
-	    }];
+// 	  [colorInSRGB getComponents:components];
+// 	  script = [NSString stringWithFormat:@"\
+// const rootElement = document.rootElement;				\
+// rootElement.style.backgroundColor = '#%02x%02x%02x';			\
+// function filter (obj, names) {						\
+//   return names.reduce ((acc, nm) => {acc[nm] = obj[nm]; return acc;}, {}); \
+// }									\
+// JSON.stringify (['width', 'height'].reduce				\
+//   ((obj, dim) => {							\
+//      obj[dim + 'BaseVal'] =						\
+//        filter (rootElement[dim].baseVal,				\
+// 	       ['unitType', 'value', 'valueInSpecifiedUnits']);		\
+//      return obj;							\
+//    }, {boundingBox: filter (rootElement.getBBox (),			\
+// 			    ['x', 'y', 'width', 'height'])}))",
+// 				       (int) (components[0] * 255 + 0.5),
+// 				       (int) (components[1] * 255 + 0.5),
+// 				       (int) (components[2] * 255 + 0.5)];
+// 	  [webView evaluateJavaScript:script
+// 		    completionHandler:^(id scriptResult, NSError *error) {
+// 	      if ([scriptResult isKindOfClass:NSString.class])
+// 		jsonString = MRC_RETAIN (scriptResult);
+// 	      else
+// 		jsonString = nil;
+// 	      finished = YES;
+// 	    }];
 
-	  while (!finished)
-	    mac_run_loop_run_once (0);
+// 	  while (!finished)
+// 	    mac_run_loop_run_once (0);
 
-	  if (jsonString == nil)
-	    boundingBox = nil;
-	  else
-	    {
-	      NSData *data =
-		[jsonString dataUsingEncoding:NSUTF8StringEncoding];
-	      NSDictionary *jsonObject =
-		[NSJSONSerialization JSONObjectWithData:data options:0
-						  error:NULL];
+// 	  if (jsonString == nil)
+// 	    boundingBox = nil;
+// 	  else
+// 	    {
+// 	      NSData *data =
+// 		[jsonString dataUsingEncoding:NSUTF8StringEncoding];
+// 	      NSDictionary *jsonObject =
+// 		[NSJSONSerialization JSONObjectWithData:data options:0
+// 						  error:NULL];
 
-	      boundingBox = jsonObject[@"boundingBox"];
-	      widthBaseVal = jsonObject[@"widthBaseVal"];
-	      heightBaseVal = jsonObject[@"heightBaseVal"];
-	      MRC_AUTORELEASE (jsonString);
-	    }
-#else
-	  WebScriptObject *rootElement =
-	    [webView.windowScriptObject
-		valueForKeyPath:@"document.rootElement"];
+// 	      boundingBox = jsonObject[@"boundingBox"];
+// 	      widthBaseVal = jsonObject[@"widthBaseVal"];
+// 	      heightBaseVal = jsonObject[@"heightBaseVal"];
+// 	      MRC_AUTORELEASE (jsonString);
+// 	    }
+// #else
+// 	  WebScriptObject *rootElement =
+// 	    [webView.windowScriptObject
+// 		valueForKeyPath:@"document.rootElement"];
 
-	  boundingBox = [rootElement callWebScriptMethod:@"getBBox"
-					   withArguments:[NSArray array]];
-	  widthBaseVal = [rootElement valueForKeyPath:@"width.baseVal"];
-	  heightBaseVal = [rootElement valueForKeyPath:@"height.baseVal"];
-#endif
-	  if (boundingBox)
-	    frameRect.size = [self frameSizeForBoundingBox:boundingBox
-					      widthBaseVal:widthBaseVal
-					     heightBaseVal:heightBaseVal
-						imageWidth:&width
-					       imageHeight:&height];
-	}
-      @catch (NSException *exception)
-	{
-	}
+// 	  boundingBox = [rootElement callWebScriptMethod:@"getBBox"
+// 					   withArguments:[NSArray array]];
+// 	  widthBaseVal = [rootElement valueForKeyPath:@"width.baseVal"];
+// 	  heightBaseVal = [rootElement valueForKeyPath:@"height.baseVal"];
+// #endif
+// 	  if (boundingBox)
+// 	    frameRect.size = [self frameSizeForBoundingBox:boundingBox
+// 					      widthBaseVal:widthBaseVal
+// 					     heightBaseVal:heightBaseVal
+// 						imageWidth:&width
+// 					       imageHeight:&height];
+// 	}
+//       @catch (NSException *exception)
+// 	{
+// 	}
 
-      if (width < 0)
-	{
-	  webView.DELEGATE = nil;
-	  (*imageErrorFunc) ("Error reading SVG image `%s'", emacsImage->spec);
-	  result = 0;
+//       if (width < 0)
+// 	{
+// 	  webView.DELEGATE = nil;
+// 	  (*imageErrorFunc) ("Error reading SVG image `%s'", emacsImage->spec);
+// 	  result = 0;
 
-	  return;
-	}
+// 	  return;
+// 	}
 
-      webView.frame = frameRect;
-      frameRect.size.width = width;
-      frameRect.origin.y = NSHeight (frameRect) - height;
-      frameRect.size.height = height;
+//       webView.frame = frameRect;
+//       frameRect.size.width = width;
+//       frameRect.origin.y = NSHeight (frameRect) - height;
+//       frameRect.size.height = height;
 
-      scaleFactor = 1;
-      if (emacsImage->target_backing_scale == 0)
-	{
-	  emacsImage->target_backing_scale =
-	    FRAME_BACKING_SCALE_FACTOR (emacsFrame);
-	  if (emacsImage->target_backing_scale == 2)
-	    {
-	      width *= 2;
-	      height *= 2;
-	      scaleFactor = 2;
-	    }
-	}
+//       scaleFactor = 1;
+//       if (emacsImage->target_backing_scale == 0)
+// 	{
+// 	  emacsImage->target_backing_scale =
+// 	    FRAME_BACKING_SCALE_FACTOR (emacsFrame);
+// 	  if (emacsImage->target_backing_scale == 2)
+// 	    {
+// 	      width *= 2;
+// 	      height *= 2;
+// 	      scaleFactor = 2;
+// 	    }
+// 	}
 
-      if (!(*checkImageSizeFunc) (emacsFrame, width, height))
-	{
-	  webView.DELEGATE = nil;
-	  (*imageErrorFunc) ("Invalid image size (see `max-image-size')");
+//       if (!(*checkImageSizeFunc) (emacsFrame, width, height))
+// 	{
+// 	  webView.DELEGATE = nil;
+// 	  (*imageErrorFunc) ("Invalid image size (see `max-image-size')");
 
-	  result = 0;
-	  return;
-	}
+// 	  result = 0;
+// 	  return;
+// 	}
 
-      emacsImage->width = width;
-      emacsImage->height = height;
-      emacsImage->pixmap = [webView createXImageFromRect:frameRect
-					 backgroundColor:backgroundColor
-					     scaleFactor:scaleFactor];
-      webView.DELEGATE = nil;
-#undef DELEGATE
+//       emacsImage->width = width;
+//       emacsImage->height = height;
+//       emacsImage->pixmap = [webView createXImageFromRect:frameRect
+// 					 backgroundColor:backgroundColor
+// 					     scaleFactor:scaleFactor];
+//       webView.DELEGATE = nil;
+// #undef DELEGATE
 
-      result = 1;
-    });
+//       result = 1;
+//     });
 
-  return result;
-}
+//   return result;
+// }
 
-#ifdef USE_WK_API
-- (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
-{
-  isLoaded = YES;
-}
-#else
-- (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
-{
-  isLoaded = YES;
-}
-#endif
+// #ifdef USE_WK_API
+// - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation;
+// {
+//   isLoaded = YES;
+// }
+// #else
+// - (void)webView:(WebView *)sender didFinishLoadForFrame:(WebFrame *)frame
+// {
+//   isLoaded = YES;
+// }
+// #endif
 
-@end				// EmacsSVGLoader
+// @end				// EmacsSVGLoader
 
-bool
-mac_webkit_supports_svg_p (void)
-{
-#ifdef USE_WK_API
-  return true;
-#else
-  bool result;
+// bool
+// mac_webkit_supports_svg_p (void)
+// {
+// #ifdef USE_WK_API
+//   return true;
+// #else
+//   bool result;
 
-  block_input ();
-  result = [WebView canShowMIMEType:@"image/svg+xml"];
-  unblock_input ();
+//   block_input ();
+//   result = [WebView canShowMIMEType:@"image/svg+xml"];
+//   unblock_input ();
 
-  return result;
-#endif
-}
+//   return result;
+// #endif
+// }
 
-bool
-mac_svg_load_image (struct frame *f, struct image *img, unsigned char *contents,
-		    ptrdiff_t size, XColor *color, Lisp_Object encoded_file,
-		    bool (*check_image_size_func) (struct frame *, int, int),
-		    void (*image_error_func) (const char *, ...))
-{
-  EmacsSVGLoader *loader =
-    [[EmacsSVGLoader alloc] initWithEmacsFrame:f emacsImage:img
-			    checkImageSizeFunc:check_image_size_func
-				imageErrorFunc:image_error_func];
-  NSData *data =
-    [NSData dataWithBytesNoCopy:contents length:size freeWhenDone:NO];
-  NSColor *backgroundColor = [NSColor colorWithXColorPixel:color->pixel];
-  NSURL *url =
-    (STRINGP (encoded_file)
-     ? [NSURL fileURLWithPath:[NSString stringWithLispString:encoded_file]]
-     : nil);
-  /* WebKit may repeatedly call waitpid for a child process
-     (WebKitPluginHost) while it returns -1 in its plug-in
-     initialization.  So we need to avoid calling wait3 for an
-     arbitrary child process in our own SIGCHLD handler.  */
-  int mask = sigblock (sigmask (SIGCHLD));
-  bool result = [loader loadData:data backgroundColor:backgroundColor
-			 baseURL:url];
+// bool
+// mac_svg_load_image (struct frame *f, struct image *img, unsigned char *contents,
+// 		    ptrdiff_t size, XColor *color, Lisp_Object encoded_file,
+// 		    bool (*check_image_size_func) (struct frame *, int, int),
+// 		    void (*image_error_func) (const char *, ...))
+// {
+//   EmacsSVGLoader *loader =
+//     [[EmacsSVGLoader alloc] initWithEmacsFrame:f emacsImage:img
+// 			    checkImageSizeFunc:check_image_size_func
+// 				imageErrorFunc:image_error_func];
+//   NSData *data =
+//     [NSData dataWithBytesNoCopy:contents length:size freeWhenDone:NO];
+//   NSColor *backgroundColor = [NSColor colorWithXColorPixel:color->pixel];
+//   NSURL *url =
+//     (STRINGP (encoded_file)
+//      ? [NSURL fileURLWithPath:[NSString stringWithLispString:encoded_file]]
+//      : nil);
+//   /* WebKit may repeatedly call waitpid for a child process
+//      (WebKitPluginHost) while it returns -1 in its plug-in
+//      initialization.  So we need to avoid calling wait3 for an
+//      arbitrary child process in our own SIGCHLD handler.  */
+//   int mask = sigblock (sigmask (SIGCHLD));
+//   bool result = [loader loadData:data backgroundColor:backgroundColor
+// 			 baseURL:url];
 
-  sigsetmask (mask);
-  MRC_RELEASE (loader);
+//   sigsetmask (mask);
+//   MRC_RELEASE (loader);
 
-  return result;
-}
+//   return result;
+// }
 
 
 /************************************************************************
