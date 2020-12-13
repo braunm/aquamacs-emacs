@@ -824,7 +824,7 @@ extern NSMenu *panelMenu;
 
 /* Structure recording bitmaps and reference count.
    If REFCOUNT is 0 then this record is free to be reused.  */
-#ifdef HAVE_MACGUI
+//#ifdef HAVE_MACGUI
 
 struct mac_bitmap_record
 {
@@ -840,7 +840,7 @@ struct mac_bitmap_record
 };
 
 typedef struct mac_bitmap_record ns_bitmap_record;
-#endif
+//#endif
 
 /* struct ns_bitmap_record */
 /* { */

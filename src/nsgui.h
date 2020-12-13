@@ -22,6 +22,8 @@ along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.  */
 /* this gets included from a couple of the plain (non-NS) .c files */
 #ifdef __OBJC__
 
+#undef Z
+
 #ifdef NS_IMPL_COCOA
 #ifdef Z
 #warning "Z is defined.  If you get a later parse error in a header, check that buffer.h or other files #define-ing Z are not included."

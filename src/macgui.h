@@ -22,7 +22,7 @@ along with GNU Emacs Mac port.  If not, see <http://www.gnu.org/licenses/>.  */
 #ifndef EMACS_MACGUI_H
 #define EMACS_MACGUI_H
 
-typedef struct _XDisplay Display; /* opaque */
+//typedef struct _XDisplay Display; /* opaque */
 
 typedef Lisp_Object XrmDatabase;
 
@@ -65,27 +65,28 @@ typedef Lisp_Object XrmDatabase;
 #endif
 #endif
 
-typedef void *Window;
-typedef void *Selection;
+/* typedef void *Window; */
+ typedef void *Selection;
 
-typedef struct _XImage
-{
-  int width, height;		/* size of image */
-  char *data;			/* pointer to image data */
-  int bytes_per_line;		/* accelarator to next line */
-  int bits_per_pixel;		/* bits per pixel (ZPixmap) */
-} *Pixmap;
+/* typedef struct _XImage */
+/* { */
+/*   int width, height;		/\* size of image *\/ */
+/*   char *data;			/\* pointer to image data *\/ */
+/*   int bytes_per_line;		/\* accelarator to next line *\/ */
+/*   int bits_per_pixel;		/\* bits per pixel (ZPixmap) *\/ */
+/* } *Pixmap; */
 
 typedef const struct _EmacsDocument *EmacsDocumentRef; /* opaque */
 
-#define Cursor CFTypeRef
-#define No_Cursor NULL
+/* #define Cursor CFTypeRef */
+/* #define No_Cursor NULL */
 
 
 typedef CGGlyph XChar2b;
 
 /* Dealing with bits of CGGlyph as if they were an XChar2b.  */
-#define STORE_XCHAR2B(chp, byte1, byte2) \
+/* Not needed since nsgui is loaded
+#define STORE_XCHAR2B(chp, byte1, byte2)				\
   ((*(chp)) = ((XChar2b)((((byte1) & 0x00ff) << 8) | ((byte2) & 0x00ff))))
 
 #define XCHAR2B_BYTE1(chp) \
@@ -93,49 +94,49 @@ typedef CGGlyph XChar2b;
 
 #define XCHAR2B_BYTE2(chp) \
   ((*(chp)) & 0x00ff)
-
+*/
 
 #ifndef DRAWING_USE_GCD
 #define DRAWING_USE_GCD 1
 #endif
 
-/* Emulate X GC's by keeping color info in a structure.  */
-typedef struct _XGCValues
-{
-  unsigned foreground : 32;
-  unsigned background : 24;
+/* /\* Emulate X GC's by keeping color info in a structure.  *\/ */
+/* typedef struct _XGCValues */
+/* { */
+/*   unsigned foreground : 32; */
+/*   unsigned background : 24; */
 
-  /* Background transparency: 0 = opaque, 255 = transparent.  */
-  unsigned background_transparency : 8;
+/*   /\* Background transparency: 0 = opaque, 255 = transparent.  *\/ */
+/*   unsigned background_transparency : 8; */
 
-  /* FillSolid or FillOpaqueStippled.  */
-  int fill_style;
+/*   /\* FillSolid or FillOpaqueStippled.  *\/ */
+/*   int fill_style; */
 
-  /* Array of 1 or 2 Core Graphics image mask(s).  The element at
-     index 1 is used as a 2x high-resolution mask if it exists.  */
-  CFArrayRef stipple;
-} XGCValues;
+/*   /\* Array of 1 or 2 Core Graphics image mask(s).  The element at */
+/*      index 1 is used as a 2x high-resolution mask if it exists.  *\/ */
+/*   CFArrayRef stipple; */
+/* } XGCValues; */
 
-typedef struct _XGC
-{
-  /* Original value.  */
-  XGCValues xgcv;
+/* typedef struct _XGC */
+/* { */
+/*   /\* Original value.  *\/ */
+/*   XGCValues xgcv; */
 
-  /* Cached data members follow.  */
+/*   /\* Cached data members follow.  *\/ */
 
-  /* Quartz 2D foreground color.  */
-  CGColorRef cg_fore_color;
+/*   /\* Quartz 2D foreground color.  *\/ */
+/*   CGColorRef cg_fore_color; */
 
-  /* Quartz 2D background color.  */
-  CGColorRef cg_back_color;
+/*   /\* Quartz 2D background color.  *\/ */
+/*   CGColorRef cg_back_color; */
 
-  /* Data consisting of clipping rectangles used in Quartz 2D drawing.
-     The y-coordinate is in the flipped coordinates.  */
-  CFDataRef clip_rects_data;
-} *GC;
+/*   /\* Data consisting of clipping rectangles used in Quartz 2D drawing. */
+/*      The y-coordinate is in the flipped coordinates.  *\/ */
+/*   CFDataRef clip_rects_data; */
+/* } *GC; */
 
-#define GCForeground            (1L<<2)
-#define GCBackground            (1L<<3)
+//#define GCForeground            (1L<<2)
+//#define GCBackground            (1L<<3)
 #define GCFillStyle		(1L<<8)
 #define GCStipple		(1L<<11)
 #define GCGraphicsExposures	0
@@ -233,18 +234,18 @@ enum
 
 typedef uint32_t WMState;
 
-typedef struct {
-    int x, y;
-    int width, height;
-} XRectangle;
+/* typedef struct { */
+/*     int x, y; */
+/*     int width, height; */
+/* } XRectangle; */
 
-#define NativeRectangle XRectangle
+//#define NativeRectangle XRectangle
 
-#define STORE_NATIVE_RECT(nr,rx,ry,rwidth,rheight)	\
-  ((nr).x = (rx),					\
-   (nr).y = (ry),					\
-   (nr).width = (rwidth),				\
-   (nr).height = (rheight))
+/* #define STORE_NATIVE_RECT(nr,rx,ry,rwidth,rheight)	\ */
+/*   ((nr).x = (rx),					\ */
+/*    (nr).y = (ry),					\ */
+/*    (nr).width = (rwidth),				\ */
+/*    (nr).height = (rheight)) */
 
 enum {
   CFOBJECT_TO_LISP_WITH_TAG			= 1 << 0,

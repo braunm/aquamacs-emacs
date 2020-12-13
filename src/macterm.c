@@ -40,7 +40,7 @@ along with GNU Emacs Mac port.  If not, see <http://www.gnu.org/licenses/>.  */
 #include "termhooks.h"
 #include "termopts.h"
 #include "termchar.h"
-#include "buffer.h"
+//#include "buffer.h"
 #include "window.h"
 #include "keyboard.h"
 #include "atimer.h"

@@ -82,7 +82,9 @@ echo "Compiler flags: $FLAGS"
 # do not use binaries either (e.g., gnutls would be recognized)
 
 # We will run only on 10.11 and later.
-MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.11"}
+##MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.11"}
+# We will run only on 10.14 and later.
+MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.14"}
 export MACOSX_DEPLOYMENT_TARGET
 
 FINALMESSAGE=""
@@ -116,7 +118,9 @@ COMPAT_CFLAGS="-Werror=partial-availability"
 COMPAT_LDFLAGS="-Wl,-no_weak_imports"
 COMPAT_LDFLAGS=
 DEPLOY="-mmacosx-version-min=$MACOSX_DEPLOYMENT_TARGET"
-MAXVERS="-DMAC_OS_X_VERSION_MAX_ALLOWED=101100"
+# MAXVERS="-DMAC_OS_X_VERSION_MAX_ALLOWED=101100"
+# MAXVERS="-DMAC_OS_X_VERSION_MAX_ALLOWED=101100"
+MAXVERS=
 
 # autoconf must be run via macports to allow its upgrade
 
