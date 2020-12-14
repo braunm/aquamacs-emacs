@@ -10541,6 +10541,7 @@ the library file(s) specified by `dynamic-library-alist'.  */)
   (Lisp_Object type)
 {
   return lookup_image_type (type) ? Qt : Qnil;
+  //return Qt;
 }
 
 /* Look up image type TYPE, and return a pointer to its image_type
@@ -10593,8 +10594,8 @@ lookup_image_type (Lisp_Object type)
 
 #ifdef HAVE_MACGUI
   if (EQ (type, Qimage_io))
-    return define_image_type (&image_io_type);
-  //return define_image_type (&jpeg_type); // for testing
+    //  return define_image_type (&image_io_type);
+    return  (&image_io_type); // for testing
 #endif
 
 
