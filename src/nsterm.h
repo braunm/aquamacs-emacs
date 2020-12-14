@@ -1044,12 +1044,14 @@ struct ns_output
 
   /* Non-zero if we are doing an animation, e.g. toggling the tool bar. */
   int in_animation;
-};
 
 #ifdef HAVE_MACGUI
- /* Backing scale factor (1 or 2), used for rendering images.  */
-  unsigned backing_scale_factor = 2;
+  /* Backing scale factor (1 or 2), used for rendering images.  */
+  unsigned int backing_scale_factor;
 #endif
+
+};
+
 
 
 

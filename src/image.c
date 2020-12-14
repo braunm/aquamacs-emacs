@@ -8059,27 +8059,14 @@ gif_load (struct frame *f, struct image *img)
 #endif /* HAVE_GIF */
 
 
-#ifdef HAVE_IMAGEMAGICK
+
 
 /***********************************************************************
 				 ImageMagick
 ***********************************************************************/
 
-/* Scale an image size by returning SIZE / DIVISOR * MULTIPLIER,
-   safely rounded and clipped to int range.  */
+static int scale_image_size (int, size_t, size_t);
 
-static int
-scale_image_size (int size, size_t divisor, size_t multiplier)
-{
-  if (divisor != 0)
-    {
-      double s = size;
-      double scaled = s * multiplier / divisor + 0.5;
-      if (scaled < INT_MAX)
-	return scaled;
-    }
-  return INT_MAX;
-}
 
 /* Compute the desired size of an image with native size WIDTH x HEIGHT.
    Use SPEC to deduce the size.  Store the desired size into
@@ -8153,6 +8140,26 @@ compute_image_size (size_t width, size_t height,
   *d_width = desired_width;
   *d_height = desired_height;
 }
+
+
+
+/* Scale an image size by returning SIZE / DIVISOR * MULTIPLIER,
+   safely rounded and clipped to int range.  */
+
+static int
+scale_image_size (int size, size_t divisor, size_t multiplier)
+{
+  if (divisor != 0)
+    {
+      double s = size;
+      double scaled = s * multiplier / divisor + 0.5;
+      if (scaled < INT_MAX)
+	return scaled;
+    }
+  return INT_MAX;
+}
+
+#ifdef HAVE_IMAGEMAGICK
 
 static bool imagemagick_image_p (Lisp_Object);
 static bool imagemagick_load (struct frame *, struct image *);
@@ -9735,8 +9742,8 @@ CGColorSpaceRef mac_cg_color_space_rgb; // from macterm.c
 // NOT SURE WHAT THIS MEANS, SO I'M PUNTING
 /* #define FRAME_BACKING_SCALE_FACTOR(f)		\ */
 /*   ((f)->output_data.mac->backing_scale_factor) */
-const unsigned default_backing_scale = 2;
-#define FRAME_BACKING_SCALE_FACTOR(f) (&default_backing_scale)
+unsigned int default_backing_scale = 2;
+#define FRAME_BACKING_SCALE_FACTOR(f) (default_backing_scale)
 
 
 Lisp_Object cfobject_to_lisp (CFTypeRef, int, int);
@@ -9761,7 +9768,7 @@ struct cfdict_context
 
 
 // Used in ImageMagick, but guarded in an ifdef for now.
-static void compute_image_size (size_t, size_t, Lisp_Object, int *, int *);
+//static void compute_image_size (size_t, size_t, Lisp_Object, int *, int *);
 
 enum {
   CFOBJECT_TO_LISP_WITH_TAG			= 1 << 0,
@@ -9823,9 +9830,13 @@ extern void mac_document_copy_page_info (EmacsDocumentRef, size_t, CGSize *,
 					 CGColorRef *, CFDictionaryRef *);
 extern void mac_document_draw_page (CGContextRef, CGRect, EmacsDocumentRef,
 				    size_t);
-extern Lisp_Object mac_nsobject_to_lisp (CFTypeRef);
+
+static Lisp_Object mac_nsobject_to_lisp (CFTypeRef);
+extern Lisp_Object mac_nsfont_to_lisp (CFTypeRef);
+extern Lisp_Object mac_nsvalue_to_lisp (CFTypeRef);
 
 
+extern Lisp_Object macfont_nsctfont_to_spec (void);
 
 
 
@@ -10582,8 +10593,8 @@ lookup_image_type (Lisp_Object type)
 
 #ifdef HAVE_MACGUI
   if (EQ (type, Qimage_io))
-    //   return define_image_type (&image_io_type);
-    return define_image_type (&jpeg_type); // for testing
+    return define_image_type (&image_io_type);
+  //return define_image_type (&jpeg_type); // for testing
 #endif
 
 
@@ -11309,5 +11320,17 @@ cfnumber_to_lisp (CFNumberRef number)
 	  CFRelease (string);
 	}
     }
+  return result;
+}
+
+Lisp_Object mac_nsobject_to_lisp (CFTypeRef obj)
+{
+  Lisp_Object result;
+
+  result = mac_nsvalue_to_lisp (obj);
+  if (!NILP (result))
+    return result;
+  result = mac_nsfont_to_lisp (obj);
+
   return result;
 }

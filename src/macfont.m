@@ -4062,20 +4062,106 @@ syms_of_macfont (void)
   staticpro (&macfont_family_cache);
 }
 
+/* also defined in font.c */
+static Lisp_Object
+font_make_spec (void)
+{
+  Lisp_Object font_spec;
+  struct font_spec *spec
+    = ((struct font_spec *)
+       allocate_pseudovector (VECSIZE (struct font_spec),
+			      FONT_SPEC_MAX, FONT_SPEC_MAX, PVEC_FONT));
+  XSETFONT (font_spec, spec);
+  return font_spec;
+}
+
+//static Lisp_Object font_make_spec (void);
+
+#define iQpoint 1500
+DEFINE_LISP_SYMBOL (Qpoint)
+
+# define Qpoint builtin_lisp_symbol (1500)
+
 
 // FOR IMAGE-IO PREVIEW
-// Lisp_Object
-// macfont_nsctfont_to_spec (void *font)
-// {
-//   Lisp_Object spec = Qnil;
-//   CTFontDescriptorRef desc = CTFontCopyFontDescriptor (font);
+Lisp_Object
+macfont_nsctfont_to_spec (void *font)
+{
+  Lisp_Object spec = Qnil;
+  CTFontDescriptorRef desc = CTFontCopyFontDescriptor (font);
 
-//   if (desc)
-//     {
-//       spec = font_make_spec ();
-//       macfont_store_descriptor_attributes (desc, spec);
-//       CFRelease (desc);
-//     }
+  if (desc)
+    {
+      spec = font_make_spec ();
+      macfont_store_descriptor_attributes (desc, spec);
+      CFRelease (desc);
+    }
 
-//   return spec;
-// }
+  return spec;
+}
+
+Lisp_Object
+mac_nsvalue_to_lisp (CFTypeRef obj)
+{
+  Lisp_Object result = Qnil;
+
+  if ([(__bridge id)obj isKindOfClass:[NSValue class]])
+    {
+      NSValue *value = (__bridge NSValue *) obj;
+      const char *type = [value objCType];
+      Lisp_Object tag = Qnil;
+
+      if (strcmp (type, @encode (NSRange)) == 0)
+	{
+	  NSRange range = [value rangeValue];
+
+	  tag = Qrange;
+	  result = Fcons (make_number (range.location),
+			  make_number (range.length));
+	}
+      else if (strcmp (type, @encode (NSPoint)) == 0)
+	{
+	  NSPoint point = [value pointValue];
+
+	  tag = Qpoint;
+	  result = Fcons (make_float (point.x), make_float (point.y));
+	}
+      else if (strcmp (type, @encode (NSSize)) == 0)
+	{
+	  NSSize size = [value sizeValue];
+
+	  tag = Qsize;
+	  result = Fcons (make_float (size.width), make_float (size.height));
+	}
+      else if (strcmp (type, @encode (NSRect)) == 0)
+	{
+	  NSRect rect = [value rectValue];
+
+	  tag = Qrect;
+	  result = list4 (make_float (NSMinX (rect)),
+			  make_float (NSMinY (rect)),
+			  make_float (NSWidth (rect)),
+			  make_float (NSHeight (rect)));
+	}
+
+      if (!NILP (tag))
+	result = Fcons (tag, result);
+    }
+
+  return result;
+}
+
+Lisp_Object
+mac_nsfont_to_lisp (CFTypeRef obj)
+{
+  Lisp_Object result = Qnil;
+
+  if ([(__bridge id)obj isKindOfClass:[NSFont class]])
+    {
+      result = macfont_nsctfont_to_spec ((void *) obj);
+      if (!NILP (result))
+	result = Fcons (Qfont, result);
+    }
+
+  return result;
+}
