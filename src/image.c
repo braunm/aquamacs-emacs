@@ -552,6 +552,7 @@ static void x_build_heuristic_mask (struct frame *, struct image *,
 static struct image_type *
 define_image_type (struct image_type *type)
 {
+  fprintf (stdout, "Running define_image_type");
   struct image_type *p = NULL;
   int new_type = type->type;
   bool type_valid = true;
@@ -593,6 +594,8 @@ define_image_type (struct image_type *type)
   unblock_input ();
   return p;
 }
+
+
 
 
 /* Value is true if OBJECT is a valid Lisp image specification.  A
@@ -9782,8 +9785,8 @@ enum {
    | CFOBJECT_TO_LISP_DONT_DECODE_DICTIONARY_KEY)
 
 
-#define iQimage_io 1025
-DEFINE_LISP_SYMBOL (Qimage_io)
+/* #define iQimage_io 1025 */
+/* DEFINE_LISP_SYMBOL (Qimage_io) */
 #define iQimage_io_properties 1026
 DEFINE_LISP_SYMBOL (Qimage_io_properties)
 #define iQimage_io_properties_at_index 1027
@@ -9807,7 +9810,7 @@ DEFINE_LISP_SYMBOL (Qdescription)
 
 
 
-# define Qimage_io builtin_lisp_symbol (1025)
+/* # define Qimage_io builtin_lisp_symbol (1025) */
 # define Qimage_io_properties builtin_lisp_symbol (1026)
 # define Qimage_io_properties_at_index builtin_lisp_symbol (1027)
 # define Qdocument_attributes builtin_lisp_symbol (1028)
@@ -10540,9 +10543,16 @@ MS-Windows), load the library for TYPE if it is not yet loaded, using
 the library file(s) specified by `dynamic-library-alist'.  */)
   (Lisp_Object type)
 {
-  // return lookup_image_type (type) ? Qt : Qnil;
-  return type;
+  return lookup_image_type (type) ? Qt : Qnil;
+  //return type;
 }
+
+/* DEFUN ("show-image-types", Fshow_image_types, Sshow_image_types, 0, 0, 0, */
+/*        doc: /\*Show current cache of image types. *\/) */
+/*      (void) */
+/* { */
+/*   return image_types; */
+/* } */
 
 /* Look up image type TYPE, and return a pointer to its image_type
    structure.  Return 0 if TYPE is not a known image type.  */
@@ -10558,10 +10568,8 @@ lookup_image_type (Lisp_Object type)
     return define_image_type (&xbm_type);
 
     //#ifdef HAVE_MACGUI
-    if (EQ (type, Qimage_io))
+    if (EQ (type, Qpdf))
       return define_image_type (&image_io_type);
-    //return Qt;
-    //return  (&image_io_type); // for testing
     //#endif
 
 
@@ -10726,6 +10734,11 @@ non-numeric, there is no explicit limit on the size of images.  */);
   DEFSYM (Qxbm, "xbm");
   ADD_IMAGE_TYPE (Qxbm);
 
+  DEFSYM (Qimage_io, "image-io");
+  ADD_IMAGE_TYPE (Qimage_io);
+  DEFSYM (Qpdf, "pdf");
+  ADD_IMAGE_TYPE (Qpdf);
+
 #if defined (HAVE_XPM) || defined (HAVE_NS)
   DEFSYM (Qxpm, "xpm");
   ADD_IMAGE_TYPE (Qxpm);
@@ -10768,6 +10781,7 @@ non-numeric, there is no explicit limit on the size of images.  */);
 #endif /* HAVE_RSVG  */
 
   defsubr (&Sinit_image_library);
+  //  defsubr (&Sshow_image_types);
 #ifdef HAVE_IMAGEMAGICK
   defsubr (&Simagemagick_types);
 #endif
