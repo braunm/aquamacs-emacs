@@ -446,7 +446,7 @@ struct frame
     struct tty_output *tty;     /* From termchar.h.  */
     struct x_output *x;         /* From xterm.h.  */
     struct w32_output *w32;     /* From w32term.h.  */
-    struct mac_output *mac;     /* From macterm.h.  */
+    //    struct mac_output *mac;     /* From macterm.h.  */
     struct ns_output *ns;       /* From nsterm.h.  */
     intptr_t nothing;
   }

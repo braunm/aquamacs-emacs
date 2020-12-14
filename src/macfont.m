@@ -4061,3 +4061,21 @@ syms_of_macfont (void)
   macfont_family_cache = Qnil;
   staticpro (&macfont_family_cache);
 }
+
+
+// FOR IMAGE-IO PREVIEW
+// Lisp_Object
+// macfont_nsctfont_to_spec (void *font)
+// {
+//   Lisp_Object spec = Qnil;
+//   CTFontDescriptorRef desc = CTFontCopyFontDescriptor (font);
+
+//   if (desc)
+//     {
+//       spec = font_make_spec ();
+//       macfont_store_descriptor_attributes (desc, spec);
+//       CFRelease (desc);
+//     }
+
+//   return spec;
+// }

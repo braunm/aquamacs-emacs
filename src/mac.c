@@ -2324,86 +2324,86 @@ DEFUN ("system-move-file-to-trash", Fsystem_move_file_to_trash,
   return Qnil;
 }
 
-DEFUN ("file-system-info", Ffile_system_info, Sfile_system_info, 1, 1, 0,
-       doc: /* Return storage information about the file system FILENAME is on.
-Value is a list of floats (TOTAL FREE AVAIL), where TOTAL is the total
-storage of the file system, FREE is the free storage, and AVAIL is the
-storage available to a non-superuser.  All 3 numbers are in bytes.
-If the underlying system call fails, value is nil.  */)
-  (Lisp_Object filename)
-{
-  Lisp_Object encoded, value;
-  struct statvfs buf;
+/* DEFUN ("file-system-info", Ffile_system_info, Sfile_system_info, 1, 1, 0, */
+/*        doc: /\* Return storage information about the file system FILENAME is on. */
+/* Value is a list of floats (TOTAL FREE AVAIL), where TOTAL is the total */
+/* storage of the file system, FREE is the free storage, and AVAIL is the */
+/* storage available to a non-superuser.  All 3 numbers are in bytes. */
+/* If the underlying system call fails, value is nil.  *\/) */
+/*   (Lisp_Object filename) */
+/* { */
+/*   Lisp_Object encoded, value; */
+/*   struct statvfs buf; */
 
-  CHECK_STRING (filename);
-  filename = Fexpand_file_name (filename, Qnil);
-  encoded = ENCODE_FILE (filename);
+/*   CHECK_STRING (filename); */
+/*   filename = Fexpand_file_name (filename, Qnil); */
+/*   encoded = ENCODE_FILE (filename); */
 
-  value = Qnil;
+/*   value = Qnil; */
 
-  block_input ();
-  if (statvfs (SDATA (encoded), &buf) == 0)
-    value = list3 (make_float (buf.f_blocks * (double) buf.f_frsize),
-		   make_float (buf.f_bfree * (double) buf.f_frsize),
-		   make_float (buf.f_bavail * (double) buf.f_frsize));
-  unblock_input ();
+/*   block_input (); */
+/*   if (statvfs (SDATA (encoded), &buf) == 0) */
+/*     value = list3 (make_float (buf.f_blocks * (double) buf.f_frsize), */
+/* 		   make_float (buf.f_bfree * (double) buf.f_frsize), */
+/* 		   make_float (buf.f_bavail * (double) buf.f_frsize)); */
+/*   unblock_input (); */
 
-  return value;
-}
+/*   return value; */
+/* } */
 
-DEFUN ("mac-osa-language-list", Fmac_osa_language_list, Smac_osa_language_list, 0, 1, 0,
-       doc: /* Return a list of available OSA languages.
-If optional arg LONG-FORMAT-P is nil, then each element is a language
-name string.  Otherwise, each element is a cons of a language name and
-a property list of information about the language.
+/* DEFUN ("mac-osa-language-list", Fmac_osa_language_list, Smac_osa_language_list, 0, 1, 0, */
+/*        doc: /\* Return a list of available OSA languages. */
+/* If optional arg LONG-FORMAT-P is nil, then each element is a language */
+/* name string.  Otherwise, each element is a cons of a language name and */
+/* a property list of information about the language. */
 
-The first element of the result corresponds the default language.  */)
-  (Lisp_Object long_format_p)
-{
-  Lisp_Object result;
+/* The first element of the result corresponds the default language.  *\/) */
+/*   (Lisp_Object long_format_p) */
+/* { */
+/*   Lisp_Object result; */
 
-  block_input ();
-  result = mac_osa_language_list (!NILP (long_format_p));
-  unblock_input ();
+/*   block_input (); */
+/*   result = mac_osa_language_list (!NILP (long_format_p)); */
+/*   unblock_input (); */
 
-  return result;
-}
+/*   return result; */
+/* } */
 
-DEFUN ("mac-osa-compile", Fmac_osa_compile, Smac_osa_compile, 1, 3, 0,
-       doc: /* Compile CODE-OR-FILE as an OSA script.
-CODE-OR-FILE is a string specifying either a source/compiled code of
-an OSA script, or a file name for a source/compiled code.
+/* DEFUN ("mac-osa-compile", Fmac_osa_compile, Smac_osa_compile, 1, 3, 0, */
+/*        doc: /\* Compile CODE-OR-FILE as an OSA script. */
+/* CODE-OR-FILE is a string specifying either a source/compiled code of */
+/* an OSA script, or a file name for a source/compiled code. */
 
-If optional 2nd arg COMPILED-P-OR-LANGUAGE is nil or a string, then it
-implies the OSA script is a source code, and specifies the OSA
-language in which the source code is written.  It should be an element
-of the result of `(mac-osa-language-list)'.  A value of nil means the
-default language.  If COMPILED-P-OR-LANGUAGE is t, then it implies
-CODE-OR-FILE itself or the contents of the file CODE-OR-FILE is a
-compiled code, and the language information is obtained from the
-compiled code.
+/* If optional 2nd arg COMPILED-P-OR-LANGUAGE is nil or a string, then it */
+/* implies the OSA script is a source code, and specifies the OSA */
+/* language in which the source code is written.  It should be an element */
+/* of the result of `(mac-osa-language-list)'.  A value of nil means the */
+/* default language.  If COMPILED-P-OR-LANGUAGE is t, then it implies */
+/* CODE-OR-FILE itself or the contents of the file CODE-OR-FILE is a */
+/* compiled code, and the language information is obtained from the */
+/* compiled code. */
 
-Optional 3rd arg FILE-P non-nil means CODE-OR-FILE is a file name
-rather than a source/compiled code.  */)
-  (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language,
-   Lisp_Object file_p)
-{
-  Lisp_Object result, error_data;
+/* Optional 3rd arg FILE-P non-nil means CODE-OR-FILE is a file name */
+/* rather than a source/compiled code.  *\/) */
+/*   (Lisp_Object code_or_file, Lisp_Object compiled_p_or_language, */
+/*    Lisp_Object file_p) */
+/* { */
+/*   Lisp_Object result, error_data; */
 
-  CHECK_STRING (code_or_file);
-  if (!(NILP (compiled_p_or_language) || EQ (compiled_p_or_language, Qt)))
-    CHECK_STRING (compiled_p_or_language);
+/*   CHECK_STRING (code_or_file); */
+/*   if (!(NILP (compiled_p_or_language) || EQ (compiled_p_or_language, Qt))) */
+/*     CHECK_STRING (compiled_p_or_language); */
 
-  block_input ();
-  result = mac_osa_compile (code_or_file, compiled_p_or_language,
-			    !NILP (file_p), &error_data);
-  unblock_input ();
+/*   block_input (); */
+/*   result = mac_osa_compile (code_or_file, compiled_p_or_language, */
+/* 			    !NILP (file_p), &error_data); */
+/*   unblock_input (); */
 
-  if (!NILP (error_data))
-    Fsignal (Qerror, error_data);
+/*   if (!NILP (error_data)) */
+/*     Fsignal (Qerror, error_data); */
 
-  return result;
-}
+/*   return result; */
+/* } */
 
 /* DEFUN ("mac-osa-script", Fmac_osa_script, Smac_osa_script, 1, MANY, 0, */
 /*        doc: /\* Execute CODE-OR-FILE as an OSA script. */
@@ -3561,8 +3561,8 @@ syms_of_mac (void)
       staticpro (&ae_attr_table[i].symbol);
     }
 
-  defsubr (&Smac_osa_language_list);
-  defsubr (&Smac_osa_compile);
+  //defsubr (&Smac_osa_language_list);
+  //defsubr (&Smac_osa_compile);
   // defsubr (&Smac_osa_script);
   // defsubr (&Smac_coerce_ae_data);
   defsubr (&Smac_get_preference);
@@ -3571,7 +3571,7 @@ syms_of_mac (void)
 
   defsubr (&Smac_file_alias_p);
   defsubr (&Ssystem_move_file_to_trash);
-  defsubr (&Sfile_system_info);
+  //defsubr (&Sfile_system_info);
 
   DEFVAR_INT ("mac-system-script-code", mac_system_script_code,
     doc: /* The system script code.  */);

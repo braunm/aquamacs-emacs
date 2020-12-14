@@ -24,6 +24,7 @@ along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "character.h"
 
+#define HAVE_MACGUI 1
 
 #ifdef HAVE_X_WINDOWS
 
@@ -84,16 +85,16 @@ typedef Pixmap XImagePtr;
 typedef XImagePtr XImagePtr_or_DC;
 #endif
 
-//#ifdef HAVE_MACGUI
-//#include "macgui.h"
-#include <CoreGraphics/CGImage.h> // for CGImageRef
-//typedef struct mac_display_info Display_Info;
-typedef struct ns_display_info mac_display_info; // MB: SAME THING?
-/* Mac equivalent of XImage.  */
-typedef Pixmap XImagePtr;
-//typedef XImage XImagePtr;
-typedef XImagePtr XImagePtr_or_DC;
-//#endif
+///* #ifdef HAVE_MACGUI */
+/* //#include "macgui.h" */
+/* #include <CoreGraphics/CGImage.h> // for CGImageRef */
+/* //typedef struct mac_display_info Display_Info; */
+/* typedef struct ns_display_info mac_display_info; // MB: SAME THING? */
+/* /\* Mac equivalent of XImage.  *\/ */
+/* typedef Pixmap XImagePtr; */
+/* //typedef XImage XImagePtr; */
+/* typedef XImagePtr XImagePtr_or_DC; */
+/* //#endif */
 
 #ifdef HAVE_WINDOW_SYSTEM
 # include <time.h>
@@ -3030,11 +3031,11 @@ struct image
      valid, respectively. */
   bool_bf background_valid : 1, background_transparent_valid : 1;
 
-  //#ifdef HAVE_MACGUI
+  #ifdef HAVE_MACGUI
   /* Target backing scale factor (<= 2) that this image is dedicated
      to.  0 means it is not dedicated to any particular one.  */
-  unsigned target_backing_scale : 2;
-  //#endif
+    unsigned target_backing_scale : 2;
+  #endif
 
 
 
@@ -3089,7 +3090,7 @@ struct image
 
   //#ifdef HAVE_MACGUI
   /* A place for image types to store Core Graphics image data.  */
-  CGImageRef cg_image;
+  //  CGImageRef cg_image;
   //#endif
 
   /* Hash value of image specification to speed up comparisons.  */

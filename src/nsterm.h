@@ -17,14 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.  */
 
-#ifndef NSTERM_H
-#define NSTERM_H
 
 #include "dispextern.h"
 #include "frame.h"
 #include "character.h"
 #include "font.h"
 #include "sysselect.h"
+
+
+#define HAVE_MACGUI 1
 
 #ifdef HAVE_NS
 
@@ -820,43 +821,17 @@ extern NSMenu *panelMenu;
 #define KEY_NS_SAVE_PANEL_CLOSED       ((1<<28)|(0<<16)|133)
 /* could use list to store these, but rest of emacs has a big infrastructure
    for managing a table of bitmap "records" */
-
-
-/* Structure recording bitmaps and reference count.
-   If REFCOUNT is 0 then this record is free to be reused.  */
-//#ifdef HAVE_MACGUI
-
-struct mac_bitmap_record
+struct ns_bitmap_record
 {
-  CFArrayRef stipple;
-  char *file;
-  int refcount;
-  int height, width, depth;
 #ifdef __OBJC__
   EmacsImage *img;
 #else
   void *img;
 #endif
+  char *file;
+  int refcount;
+  int height, width, depth;
 };
-
-typedef struct mac_bitmap_record ns_bitmap_record;
-//#endif
-
-/* struct ns_bitmap_record */
-/* { */
-/* #ifdef __OBJC__ */
-/*   EmacsImage *img; */
-/* #else */
-/*   void *img; */
-/* #endif */
-/*   char *file; */
-/*   int refcount; */
-/*   int height, width, depth; */
-/* }; */
-
-//#endif
-
-
 
 /* this to map between emacs color indices and NSColor objects */
 struct ns_color_table
@@ -943,9 +918,7 @@ struct ns_display_info
   /* Minimum font height over all fonts in font_table.  */
   int smallest_font_height;
 
-
-  //struct ns_bitmap_record *bitmaps;
-  struct mac_bitmap_record *bitmaps;
+  struct ns_bitmap_record *bitmaps;
   ptrdiff_t bitmaps_size;
   ptrdiff_t bitmaps_last;
 
@@ -1071,14 +1044,14 @@ struct ns_output
 
   /* Non-zero if we are doing an animation, e.g. toggling the tool bar. */
   int in_animation;
-
-  /* from mac port */
-
-  /* Backing scale factor (1 or 2), used for rendering images.  */
-  unsigned backing_scale_factor : 2;
-
-
 };
+
+#ifdef HAVE_MACGUI
+ /* Backing scale factor (1 or 2), used for rendering images.  */
+  unsigned backing_scale_factor = 2;
+#endif
+
+
 
 /* this dummy decl needed to support TTYs */
 struct x_output
@@ -1114,15 +1087,6 @@ struct x_output
 #define FRAME_POINTER_TYPE(f) ((f)->output_data.ns->current_pointer)
 
 #define FRAME_FONT(f) ((f)->output_data.ns->font)
-
-// FOR IMAGE-IO
-#define FRAME_BACKING_SCALE_FACTOR(f)		\
-((f)->output_data.ns->backing_scale_factor)
-
-//  ((f)->output_data.mac->backing_scale_factor)	\
-
-
-
 
 #ifdef __OBJC__
 #define XNS_SCROLL_BAR(vec) ((id) XSAVE_POINTER (vec, 0))
@@ -1422,127 +1386,4 @@ typedef struct
 } MMXcodeSelectionRange;
 
 
-
 #endif	/* HAVE_NS */
-
-// FROM MAC PORT FOR IMAGE-IO
-// MIGHT NOT NEED THIS
-
-#ifdef _DUMMY_
-
-/* The collection of data describing a window on the Mac.  */
-struct mac_output
-{
-  /* Here are the Graphics Contexts for the default font.  */
-  GC normal_gc;				/* Normal video */
-  GC cursor_gc;				/* cursor drawing */
-
-  /* The window used for this frame.
-     May be zero while the frame object is being created
-     and the window has not yet been created.  */
-  Window window_desc;
-
-  /* The window that is the parent of this window.
-     Usually this is a window that was made by the window manager,
-     but it can be the root window, and it can be explicitly specified
-     (see the explicit_parent field, below).  */
-  Window parent_desc;
-
-  /* Default ASCII font of this frame. */
-  struct font *font;
-
-  /* The baseline offset of the default ASCII font.  */
-  int baseline_offset;
-
-  /* If a fontset is specified for this frame instead of font, this
-     value contains an ID of the fontset, else -1.  */
-  int fontset;
-
-  /* Pixel values used for various purposes.
-     border_pixel may be -1 meaning use a gray tile.  */
-  unsigned long cursor_pixel;
-  unsigned long border_pixel;
-  unsigned long mouse_pixel;
-  unsigned long cursor_foreground_pixel;
-
-  /* Descriptor for the cursor in use for this window.  */
-  Cursor text_cursor;
-  Cursor nontext_cursor;
-  Cursor modeline_cursor;
-  Cursor hand_cursor;
-  Cursor hourglass_cursor;
-  Cursor horizontal_drag_cursor;
-  Cursor vertical_drag_cursor;
-  Cursor current_cursor;	/* unretained */
-
-  /* Menubar "widget" handle.  */
-  bool_bf menubar_widget : 1;
-
-  /* True means our parent is another application's window
-     and was explicitly specified.  */
-  bool_bf explicit_parent : 1;
-
-  /* True means tried already to make this frame visible.  */
-  bool_bf asked_for_visible : 1;
-
-  /* True means this frame is for tooltip.  */
-  bool_bf tooltip_p : 1;
-
-  /* True means x_check_fullscreen is not called yet after fullscreen
-     request for this frame.  */
-  bool_bf check_fullscreen_needed_p : 1;
-
-  /* True means this frame uses a native tool bar (as opposed to a
-     toolkit one).  */
-  bool_bf native_tool_bar_p : 1;
-
-  /* True means background alpha value is enabled for this frame.  */
-  bool_bf background_alpha_enabled_p : 1;
-
-  /* True means synthetic bold workaround is disabled for this
-     frame.  */
-  bool_bf synthetic_bold_workaround_disabled_p : 1;
-
-  /* Backing scale factor (1 or 2), used for rendering images.  */
-  unsigned backing_scale_factor : 2;
-
-  /* State for image vs. backing scaling factor mismatch
-     detection.  */
-  unsigned scale_mismatch_state : 2;
-
-  /* This variable records the gravity value of the window position if
-     the window has an external tool bar when it is created.  The
-     position of the window is adjusted using this information when
-     the tool bar is first redisplayed.  Once the tool bar is
-     redisplayed, it is set to 0 in order to avoid further
-     adjustment.  */
-  unsigned toolbar_win_gravity : 4;
-
-  /* Width of the internal border.  */
-  int internal_border_width;
-
-  /* Relief GCs, colors etc.  */
-  struct relief
-  {
-    GC gc;
-    unsigned long pixel;
-  }
-  black_relief, white_relief;
-
-  /* The background for which the above relief GCs were set up.
-     They are changed only when a different background is involved.  */
-  unsigned long relief_background;
-
-  /* Hints for the size and the position of a window.  */
-  XSizeHints *size_hints;
-
-  /* Quartz 2D graphics context.  */
-  CGContextRef cg_context;
-
-  /* Data representing the array of NativeRectangle's that will be
-     inverted on drawRect: invocation.  */
-  CFDataRef flash_rectangles_data;
-};
-#endif
-
-#endif //include fence

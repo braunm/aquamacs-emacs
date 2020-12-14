@@ -268,39 +268,39 @@ enum {
 
 /* Return an NSFont object for the specified FACE.  */
 
-+ (NSFont *)fontWithFace:(struct face *)face
-{
-  if (face == NULL || face->font == NULL)
-    return nil;
+// + (NSFont *)fontWithFace:(struct face *)face
+// {
+//   if (face == NULL || face->font == NULL)
+//     return nil;
 
-  return (__bridge NSFont *) macfont_get_nsctfont (face->font);
-}
+//   return (__bridge NSFont *) macfont_get_nsctfont (face->font);
+// }
 
-@end				// NSFont (Emacs)
+// @end				// NSFont (Emacs)
 
-@implementation NSEvent (Emacs)
+// @implementation NSEvent (Emacs)
 
-- (NSEvent *)mouseEventByChangingType:(NSEventType)type
-			  andLocation:(NSPoint)location
-{
-  NSInteger clickCount = [self clickCount];
+// - (NSEvent *)mouseEventByChangingType:(NSEventType)type
+// 			  andLocation:(NSPoint)location
+// {
+//   NSInteger clickCount = [self clickCount];
 
-  /* Dragging via Screen Sharing.app sets clickCount to 0, and it
-     disables updating screen during resize on macOS 10.12.  */
-  return [NSEvent
-	   mouseEventWithType:type location:location
-		modifierFlags:[self modifierFlags]
-		    timestamp:(mac_system_uptime ())
-		 windowNumber:[self windowNumber]
-#if MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
-		      context:nil
-#else
-		      context:[self context]
-#endif
-		  eventNumber:[self eventNumber]
-		   clickCount:(clickCount ? clickCount : 1)
-		     pressure:[self pressure]];
-}
+//   /* Dragging via Screen Sharing.app sets clickCount to 0, and it
+//      disables updating screen during resize on macOS 10.12.  */
+//   return [NSEvent
+// 	   mouseEventWithType:type location:location
+// 		modifierFlags:[self modifierFlags]
+// 		    timestamp:(mac_system_uptime ())
+// 		 windowNumber:[self windowNumber]
+// #if MAC_OS_X_VERSION_MIN_REQUIRED >= 101200
+// 		      context:nil
+// #else
+// 		      context:[self context]
+// #endif
+// 		  eventNumber:[self eventNumber]
+// 		   clickCount:(clickCount ? clickCount : 1)
+// 		     pressure:[self pressure]];
+// }
 
 // static void
 // mac_cgevent_set_unicode_string_from_event_ref (CGEventRef cgevent,
