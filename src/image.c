@@ -10570,7 +10570,12 @@ lookup_image_type (Lisp_Object type)
     //#ifdef HAVE_MACGUI
     if (EQ (type, Qpdf))
       return define_image_type (&image_io_type);
-    //#endif
+
+   if (EQ (type, Qimage_io))
+      return define_image_type (&image_io_type);
+
+
+   //#endif
 
 
 #if defined (HAVE_XPM) || defined (HAVE_NS)
