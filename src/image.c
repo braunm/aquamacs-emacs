@@ -552,7 +552,7 @@ static void x_build_heuristic_mask (struct frame *, struct image *,
 static struct image_type *
 define_image_type (struct image_type *type)
 {
-  fprintf (stdout, "Running define_image_type");
+
   struct image_type *p = NULL;
   int new_type = type->type;
   bool type_valid = true;
@@ -914,7 +914,6 @@ or omitted means use the selected frame.  */)
     }
   else
     error ("Invalid image specification");
-
   return mask;
 }
 
@@ -9785,43 +9784,6 @@ enum {
    | CFOBJECT_TO_LISP_DONT_DECODE_DICTIONARY_KEY)
 
 
-/* #define iQimage_io 1025 */
-/* DEFINE_LISP_SYMBOL (Qimage_io) */
-#define iQimage_io_properties 1026
-DEFINE_LISP_SYMBOL (Qimage_io_properties)
-#define iQimage_io_properties_at_index 1027
-DEFINE_LISP_SYMBOL (Qimage_io_properties_at_index)
-#define iQdocument_attributes 1028
-DEFINE_LISP_SYMBOL (Qdocument_attributes)
-#define iQCdata_2x 1029
-DEFINE_LISP_SYMBOL (QCdata_2x)
-#define iQdate 1030
-DEFINE_LISP_SYMBOL (Qdate)
-#define iQarray 1031
-DEFINE_LISP_SYMBOL (Qarray)
-#define iQboolean 1032
-DEFINE_LISP_SYMBOL (Qboolean)
-#define iQdictionary 1033
-DEFINE_LISP_SYMBOL (Qdictionary)
-#define iQnumber 1034
-DEFINE_LISP_SYMBOL (Qnumber)
-#define iQdescription 1035
-DEFINE_LISP_SYMBOL (Qdescription)
-
-
-
-/* # define Qimage_io builtin_lisp_symbol (1025) */
-# define Qimage_io_properties builtin_lisp_symbol (1026)
-# define Qimage_io_properties_at_index builtin_lisp_symbol (1027)
-# define Qdocument_attributes builtin_lisp_symbol (1028)
-# define QCdata_2x builtin_lisp_symbol (1029)
-# define Qdate builtin_lisp_symbol (1030)
-# define Qarray builtin_lisp_symbol (1031)
-# define Qboolean builtin_lisp_symbol (1032)
-# define Qdictionary builtin_lisp_symbol (1033)
-# define Qnumber builtin_lisp_symbol (1034)
-# define Qdescription builtin_lisp_symbol (1035)
-
 
 // in macappkit.m
 extern EmacsDocumentRef mac_document_create_with_url (CFURLRef,
@@ -10388,8 +10350,11 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
   context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8,
 				   ximg->bytes_per_line,
 				   mac_cg_color_space_rgb,
-				   kCGImageAlphaNoneSkipFirst
-				   | kCGBitmapByteOrder32Host);
+				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this
+				   kCGImageAlphaOnly
+				   | kCGImageByteOrderDefault
+				   //| kCGBitmapByteOrder32Host,
+				   );
   mask_img = NULL;
   if (has_alpha_p || fmod (rotation, 90) != 0)
     {
@@ -10567,9 +10532,6 @@ lookup_image_type (Lisp_Object type)
   if (EQ (type, Qxbm))
     return define_image_type (&xbm_type);
 
-    //#ifdef HAVE_MACGUI
-    if (EQ (type, Qpdf))
-      return define_image_type (&image_io_type);
 
    if (EQ (type, Qimage_io))
       return define_image_type (&image_io_type);
@@ -10700,6 +10662,17 @@ non-numeric, there is no explicit limit on the size of images.  */);
   DEFSYM (QCpt_height, ":pt-height");
 #endif /* HAVE_GHOSTSCRIPT */
 
+  /* Needed for image_io */
+  DEFSYM(Qdocument_attributes, "document_attributes");
+  DEFSYM(QCdata_2x, "data_2x");
+  DEFSYM(Qdate, "date");
+  DEFSYM(Qarray, "array");
+  DEFSYM(Qboolean, "boolean");
+  DEFSYM(Qdictionary, "dictionary");
+  DEFSYM(Qnumber, "number");
+  DEFSYM(Qdescription, "description");
+
+
 #ifdef HAVE_NTGUI
   /* Versions of libpng, libgif, and libjpeg that we were compiled with,
      or -1 if no PNG/GIF support was compiled in.  This is tested by
@@ -10741,8 +10714,9 @@ non-numeric, there is no explicit limit on the size of images.  */);
 
   DEFSYM (Qimage_io, "image-io");
   ADD_IMAGE_TYPE (Qimage_io);
-  DEFSYM (Qpdf, "pdf");
-  ADD_IMAGE_TYPE (Qpdf);
+  DEFSYM(Qimage_io_properties,"image-io-properties");
+  DEFSYM(Qimage_io_properties_at_index,"image-io-properties-at-index");
+
 
 #if defined (HAVE_XPM) || defined (HAVE_NS)
   DEFSYM (Qxpm, "xpm");
