@@ -10347,14 +10347,29 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
       return 0;
     }
 
-  context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8,
-				   ximg->bytes_per_line,
-				   mac_cg_color_space_rgb,
+  /* context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8, */
+  /* 				   ximg->bytes_per_line, */
+  /* 				   mac_cg_color_space_rgb, */
+  /* 				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this */
+  /* 				   kCGImageAlphaOnly */
+  /* 				   | kCGImageByteOrderDefault */
+  /* 				   //| kCGBitmapByteOrder32Host, */
+  /* 				   ); */
+
+  CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
+  context = CGBitmapContextCreate (NULL, width, height, 8,
+				   0,
+				   //	   mac_cg_color_space_rgb,
+				   colorspace,
 				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this
-				   kCGImageAlphaOnly
-				   | kCGImageByteOrderDefault
+				   //	   kCGImageAlphaOnly
+				   // | kCGImageByteOrderDefault
 				   //| kCGBitmapByteOrder32Host,
+				   kCGImageAlphaNoneSkipFirst
 				   );
+
+
   mask_img = NULL;
   if (has_alpha_p || fmod (rotation, 90) != 0)
     {
@@ -10385,9 +10400,13 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 		 dispatch_get_global_queue (DISPATCH_QUEUE_PRIORITY_DEFAULT,
 					    0), ^{
 		  CGContextRef mask_context =
-		    CGBitmapContextCreate (mask_img->data,
-					   mask_img->width, mask_img->height,
-					   8, mask_img->bytes_per_line,
+		    /* CGBitmapContextCreate (mask_img->data, */
+		    /* 			   mask_img->width, mask_img->height, */
+		    /* 			   8, mask_img->bytes_per_line, */
+		    /* 			   NULL, kCGImageAlphaOnly); */
+		    CGBitmapContextCreate (NULL,
+					   width, height,
+					   8, 0,
 					   NULL, kCGImageAlphaOnly);
 
 		  CGContextClearRect (mask_context,
