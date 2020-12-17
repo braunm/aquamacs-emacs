@@ -9739,7 +9739,11 @@ static void mac_cg_image_source_get_pixel_size (CGImageSourceRef, size_t,
 						int *, int *);
 static size_t mac_cg_image_source_find_2x_index (CGImageSourceRef);
 static Lisp_Object mac_find_2x_image_file (Lisp_Object, int *);
-CGColorSpaceRef mac_cg_color_space_rgb; // from macterm.c
+//CGColorSpaceRef mac_cg_color_space_rgb; // from macterm.c
+
+
+
+
 
 // NOT SURE WHAT THIS MEANS, SO I'M PUNTING
 /* #define FRAME_BACKING_SCALE_FACTOR(f)		\ */
@@ -9901,6 +9905,8 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
   CGAffineTransform transform;
   Boolean has_alpha_p, gif_p, tiff_p;
   dispatch_group_t group;
+
+  CGColorSpaceRef colorspace_rgb = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
 
   /* Open the file.  */
   specified_file = image_spec_value (img->spec, QCfile, NULL);
@@ -10356,12 +10362,12 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
   /* 				   //| kCGBitmapByteOrder32Host, */
   /* 				   ); */
 
-  CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
 
   context = CGBitmapContextCreate (NULL, width, height, 8,
 				   0,
 				   //	   mac_cg_color_space_rgb,
-				   colorspace,
+				   colorspace_rgb,
 				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this
 				   //	   kCGImageAlphaOnly
 				   // | kCGImageByteOrderDefault
@@ -10407,7 +10413,10 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 		    CGBitmapContextCreate (NULL,
 					   width, height,
 					   8, 0,
-					   NULL, kCGImageAlphaOnly);
+					   NULL,
+					   //kCGImageAlphaOnly
+					   kCGImageAlphaNoneSkipFirst
+					   );
 
 		  CGContextClearRect (mask_context,
 				      CGRectMake (0, 0, width, height));
@@ -10450,7 +10459,7 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 	  CGColorRelease (default_bg);
 	  default_bg = NULL;
 	}
-      cg_color = CGColorCreate (mac_cg_color_space_rgb, rgba);
+      cg_color = CGColorCreate (colorspace_rgb, rgba);
       if (cg_color && (default_bg == NULL || CGColorGetAlpha (default_bg) != 1))
 	{
 	  CGContextSetFillColorWithColor (context, cg_color);

@@ -157,9 +157,9 @@ typedef NSString * NSWindowTabbingIdentifier;
 - (CGColorRef)copyCGColor;
 @end
 
-/* @interface NSImage (Emacs) */
-/* + (NSImage *)imageWithCGImage:(CGImageRef)cgImage exclusive:(BOOL)flag; */
-/* @end */
+@interface NSImage (Emacs)
++ (NSImage *)imageWithCGImage:(CGImageRef)cgImage exclusive:(BOOL)flag;
+@end
 
 /* @interface NSApplication (Emacs) */
 /* - (void)postDummyEvent; */

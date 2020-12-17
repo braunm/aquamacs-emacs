@@ -3031,11 +3031,11 @@ struct image
      valid, respectively. */
   bool_bf background_valid : 1, background_transparent_valid : 1;
 
-  #ifdef HAVE_MACGUI
+  // #ifdef HAVE_MACGUI
   /* Target backing scale factor (<= 2) that this image is dedicated
      to.  0 means it is not dedicated to any particular one.  */
     unsigned target_backing_scale : 1;
-  #endif
+  // #endif
 
 
 
