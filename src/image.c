@@ -65,7 +65,13 @@ typedef struct x_bitmap_record Bitmap_Record;
 #define PIX_MASK_DRAW	1
 #endif /* HAVE_X_WINDOWS */
 
-#define HAVE_MACGUI 1
+
+
+/* static Pixmap */
+/* mac_create_pixmap (unsigned int, unsigned int, unsigned int); */
+
+/* #define XCreatePixmap(display, w, width, height, depth) \ */
+/*   mac_create_pixmap (width, height, depth) */
 
 #ifdef HAVE_NTGUI
 
@@ -2085,7 +2091,30 @@ x_create_x_image_and_pixmap (struct frame *f, int width, int height, int depth,
 
 #endif /* HAVE_NTGUI */
 
-#ifdef HAVE_NS
+
+/* #ifdef HAVE_MACGUI */
+  /* Display *display = FRAME_X_DISPLAY (f); */
+  /* Window window = FRAME_X_WINDOW (f); */
+
+  /* eassert (input_blocked_p ()); */
+
+  /* /\* Allocate a pixmap of the same size.  *\/ */
+  /* *pixmap = XCreatePixmap (display, window, width, height, depth); */
+  /* if (*pixmap == NO_PIXMAP) */
+  /*   { */
+  /*     *ximg = NULL; */
+  /*     image_error ("Unable to create X pixmap", Qnil, Qnil); */
+  /*     return 0; */
+  /*   } */
+
+  /* *ximg = *pixmap; */
+  /* return 1; */
+
+/* #endif  /\* HAVE_MACGUI *\/ */
+
+
+
+/* #ifdef HAVE_NS */
   *pixmap = ns_image_for_XPM (width, height, depth);
   if (*pixmap == 0)
     {
@@ -2095,7 +2124,7 @@ x_create_x_image_and_pixmap (struct frame *f, int width, int height, int depth,
     }
   *ximg = *pixmap;
   return 1;
-#endif
+/* #endif */
 }
 
 
@@ -9715,7 +9744,7 @@ DEFUN ("lookup-image", Flookup_image, Slookup_image, 1, 1, 0,
 Image IO Types
 ****/
 
-#ifdef HAVE_MACGUI
+
 #include <CoreFoundation/CFArray.h> // for CFArrayRef
 #include <CoreFoundation/CFString.h> // for CFStringRef
 #include <CoreServices/CoreServices.h> // for UTTypes
@@ -9726,6 +9755,10 @@ Image IO Types
 
 typedef const struct _EmacsDocument *EmacsDocumentRef; /* opaque */
 //typedef struct ns_output mac_output;
+
+
+
+
 
 
 
@@ -9742,14 +9775,8 @@ static Lisp_Object mac_find_2x_image_file (Lisp_Object, int *);
 //CGColorSpaceRef mac_cg_color_space_rgb; // from macterm.c
 
 
-
-
-
-// NOT SURE WHAT THIS MEANS, SO I'M PUNTING
-/* #define FRAME_BACKING_SCALE_FACTOR(f)		\ */
-/*   ((f)->output_data.mac->backing_scale_factor) */
-unsigned int default_backing_scale = 2;
-#define FRAME_BACKING_SCALE_FACTOR(f) (default_backing_scale)
+#define FRAME_BACKING_SCALE_FACTOR(f)		\
+  ((f)->output_data.ns->backing_scale_factor)
 
 
 Lisp_Object cfobject_to_lisp (CFTypeRef, int, int);
@@ -9973,6 +10000,9 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
   dispatch_group_t group;
 
   CGColorSpaceRef colorspace_rgb = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
+
+
 
   /* Open the file.  */
   specified_file = image_spec_value (img->spec, QCfile, NULL);
@@ -10423,25 +10453,25 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
 
   /* context = CGBitmapContextCreate (ximg->data, ximg->width, ximg->height, 8, */
   /* 				   ximg->bytes_per_line, */
-  /* 				   mac_cg_color_space_rgb, */
-  /* 				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this */
-  /* 				   kCGImageAlphaOnly */
+  /* 				   //	   mac_cg_color_space_rgb, */
+  /* 				   colorspace_rgb, */
+  /* 				   kCGImageAlphaNoneSkipFirst // lldb said to change this */
+  /* 				   //  kCGImageAlphaOnly */
   /* 				   | kCGImageByteOrderDefault */
   /* 				   //| kCGBitmapByteOrder32Host, */
   /* 				   ); */
 
 
-
   context = CGBitmapContextCreate (NULL, width, height, 8,
-				   0,
+				   width*4,
 				   //	   mac_cg_color_space_rgb,
 				   colorspace_rgb,
 				   //  kCGImageAlphaNoneSkipFirst // lldb said to change this
 				   //	   kCGImageAlphaOnly
 				   // | kCGImageByteOrderDefault
 				   //| kCGBitmapByteOrder32Host,
-				   kCGImageAlphaPremultipliedFirst
-				   //				   kCGImageAlphaNoneSkipFirst
+				   kCGImageAlphaPremultipliedLast
+				   //  kCGImageAlphaNoneSkipFirst
 				   );
 
 
@@ -10478,13 +10508,13 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
 		    /* CGBitmapContextCreate (mask_img->data, */
 		    /* 			   mask_img->width, mask_img->height, */
 		    /* 			   8, mask_img->bytes_per_line, */
-		    /* 			   NULL, kCGImageAlphaOnly); */
+		    /* 			   NULL, kCGImageAlphaPremultipliedLast); */
 		    CGBitmapContextCreate (NULL,
 					   width, height,
-					   8, 0,
+					   8, width*4,
 					   NULL,
-					   //kCGImageAlphaOnly
-					   //					   kCGImageAlphaNoneSkipFirst
+					   // kCGImageAlphaOnly
+					   // kCGImageAlphaNoneSkipFirst
 					   kCGImageAlphaPremultipliedFirst
 					   );
 
@@ -10596,7 +10626,7 @@ pdf_load (struct frame *f, struct image *img)
 
 
 
-#endif
+
 
 
 /***********************************************************************
@@ -11439,3 +11469,17 @@ Lisp_Object mac_nsobject_to_lisp (CFTypeRef obj)
 
   return result;
 }
+
+/* Pixmap */
+/* mac_create_pixmap (unsigned int width, unsigned int height, unsigned int depth) */
+/* { */
+/*   XImagePtr ximg; */
+
+/*   ximg = xmalloc (sizeof (*ximg)); */
+/*   ximg->width = width; */
+/*   ximg->height = height; */
+/*   ximg->bits_per_pixel = depth == 1 ? 8 : 32; */
+/*   ximg->bytes_per_line = width * (ximg->bits_per_pixel / 8); */
+/*   ximg->data = xmalloc (ximg->bytes_per_line * height); */
+/*   return ximg; */
+/* } */

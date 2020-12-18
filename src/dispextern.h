@@ -69,12 +69,12 @@ typedef XImagePtr XImagePtr_or_DC;
 #define NativeRectangle XRectangle
 #endif
 
-#ifdef HAVE_NTGUI
-#include "w32gui.h"
-typedef struct w32_display_info Display_Info;
-typedef XImage *XImagePtr;
-typedef HDC XImagePtr_or_DC;
-#endif
+/* #ifdef HAVE_NTGUI */
+/* #include "w32gui.h" */
+/* typedef struct w32_display_info Display_Info; */
+/* typedef XImage *XImagePtr; */
+/* typedef HDC XImagePtr_or_DC; */
+/* #endif */
 
 #ifdef HAVE_NS
 #include "nsgui.h"
@@ -3034,7 +3034,7 @@ struct image
   // #ifdef HAVE_MACGUI
   /* Target backing scale factor (<= 2) that this image is dedicated
      to.  0 means it is not dedicated to any particular one.  */
-    unsigned target_backing_scale : 1;
+    int target_backing_scale : 2;
   // #endif
 
 
