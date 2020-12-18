@@ -9858,27 +9858,6 @@ enum image_io_keyword_index
     IMAGE_IO_LAST
   };
 
-enum pdf_keyword_index
-  {
-    PDF_TYPE,
-    PDF_DATA,
-    PDF_FILE,
-    PDF_ASCENT,
-    PDF_MARGIN,
-    PDF_RELIEF,
-    PDF_ALGORITHM,
-    PDF_HEURISTIC_MASK,
-    PDF_MASK,
-    PDF_BACKGROUND,
-    PDF_HEIGHT,
-    PDF_WIDTH,
-    PDF_MAX_HEIGHT,
-    PDF_MAX_WIDTH,
-    PDF_FORMAT,
-    PDF_ROTATION,
-    PDF_CROP,
-    PDF_LAST
-  };
 
 static struct image_keyword image_io_format[IMAGE_IO_LAST] =
   {
@@ -9901,26 +9880,6 @@ static struct image_keyword image_io_format[IMAGE_IO_LAST] =
     {":crop",		IMAGE_DONT_CHECK_VALUE_TYPE,		0}
   };
 
-static struct image_keyword pdf_format[PDF_LAST] =
-  {
-    {":type",		IMAGE_SYMBOL_VALUE,			1},
-    {":data",		IMAGE_STRING_VALUE,			0},
-    {":file",		IMAGE_STRING_VALUE,			0},
-    {":ascent",		IMAGE_ASCENT_VALUE,			0},
-    {":margin",		IMAGE_NON_NEGATIVE_INTEGER_VALUE_OR_PAIR, 0},
-    {":relief",		IMAGE_INTEGER_VALUE,			0},
-    {":conversion",	IMAGE_DONT_CHECK_VALUE_TYPE,		0},
-    {":heuristic-mask",	IMAGE_DONT_CHECK_VALUE_TYPE,		0},
-    {":mask",		IMAGE_DONT_CHECK_VALUE_TYPE,		0},
-    {":background",	IMAGE_STRING_OR_NIL_VALUE,		0},
-    {":height",		IMAGE_INTEGER_VALUE,			0},
-    {":width",		IMAGE_INTEGER_VALUE,			0},
-    {":max-height",	IMAGE_INTEGER_VALUE,			0},
-    {":max-width",	IMAGE_INTEGER_VALUE,			0},
-    {":format",		IMAGE_SYMBOL_VALUE,			0},
-    {":rotation",	IMAGE_NUMBER_VALUE,     		0},
-    {":crop",		IMAGE_DONT_CHECK_VALUE_TYPE,		0}
-  };
 
 static struct image_type image_io_type =
   {
@@ -9932,15 +9891,6 @@ static struct image_type image_io_type =
     NULL
   };
 
-static struct image_type pdf_type =
-  {
-    SYMBOL_INDEX (Qpdf),
-    image_io_image_p,
-    image_io_load,
-    x_clear_image,
-    NULL,
-    NULL
-  };
 
 /* Return true if OBJECT is a valid IMAGE_IO image specification.  Do
    this by calling parse_image_spec and supplying the keywords that
@@ -9959,21 +9909,10 @@ image_io_image_p (Lisp_Object object)
   return fmt[IMAGE_IO_FILE].count + fmt[IMAGE_IO_DATA].count == 1;
 }
 
-static bool
-pdf_image_p (Lisp_Object object)
-{
-  struct image_keyword fmt[PDF_LAST];
-  memcpy (fmt, pdf_format, sizeof fmt);
 
-  if (!parse_image_spec (object, fmt, PDF_LAST, Qpdf))
-    return 0;
-
-  /* Must specify either the :data or :file keyword.  */
-  return fmt[PDF_FILE].count + fmt[PDF_DATA].count == 1;
-}
 
 static bool
-image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool pdf)
+image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 {
   Lisp_Object specified_file, specified_data, metadata = Qnil;
   CFURLRef url = NULL;
@@ -10176,7 +10115,6 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
 	    }
 	}
       if (src_props)
-		if (!pdf) {
 	  {
 	    if (type == NULL)
 	      metadata = Fcons (Qimage_io_properties,
@@ -10192,7 +10130,7 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
 					 metadata));
 	      CFRelease (props);
 	    }
-       }
+
 
       if (type == NULL || gif_p)
 	{
@@ -10614,14 +10552,9 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type, bool 
 static bool
 image_io_load (struct frame *f, struct image *img)
 {
-  return image_load_image_io (f, img, NULL, 1);
+  return image_load_image_io (f, img, NULL);
 }
 
-static bool
-pdf_load (struct frame *f, struct image *img)
-{
-  return image_load_image_io (f, img, NULL,0);
-}
 
 
 
@@ -10669,9 +10602,6 @@ lookup_image_type (Lisp_Object type)
 
    if (EQ (type, Qimage_io))
       return define_image_type (&image_io_type);
-
-    if (EQ (type, Qpdf))
-      return define_image_type (&pdf_type);
 
 
    //#endif
@@ -10854,7 +10784,7 @@ non-numeric, there is no explicit limit on the size of images.  */);
   DEFSYM(Qimage_io_properties,"image-io-properties");
   DEFSYM(Qimage_io_properties_at_index,"image-io-properties-at-index");
 
-  DEFSYM (Qpdf, "pdf");
+
 
 #if defined (HAVE_XPM) || defined (HAVE_NS)
   DEFSYM (Qxpm, "xpm");
