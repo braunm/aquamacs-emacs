@@ -9816,7 +9816,7 @@ enum {
 
 
 
-// in macappkit.m
+// in mac_docs.m
 extern EmacsDocumentRef mac_document_create_with_url (CFURLRef,
 						      CFDictionaryRef);
 extern EmacsDocumentRef mac_document_create_with_data (CFDataRef,
@@ -10263,7 +10263,7 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 
   if (obj == NULL)
     {
-      image_error ("Error reading image `%s'", img->spec, Qnil);
+      image_error ("Null obj. Error reading image `%s'", img->spec, Qnil);
       return 0;
     }
 
@@ -10466,6 +10466,7 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
 		    CGContextDrawImage (mask_context, rectangle,
 					(CGImageRef) obj);
 		  else
+		    image_error("%s","drawing mask");
 		    mac_document_draw_page (mask_context, rectangle,
 					    (EmacsDocumentRef) obj,
 					    page_index);
@@ -10518,6 +10519,7 @@ image_load_image_io (struct frame *f, struct image *img, CFStringRef type)
   if (CFGetTypeID (obj) == CGImageGetTypeID ())
     CGContextDrawImage (context, rectangle, (CGImageRef) obj);
   else
+    image_error("Drawing document\n",obj);
     mac_document_draw_page (context, rectangle, (EmacsDocumentRef) obj,
 			    page_index);
   CGContextRelease (context);

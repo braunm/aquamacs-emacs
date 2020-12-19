@@ -83,8 +83,8 @@ echo "Compiler flags: $FLAGS"
 
 # We will run only on 10.11 and later.
 ##MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.11"}
-# We will run only on 10.14 and later.
-MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.14"}
+# We will run only on 10.12 and later.
+MACOSX_DEPLOYMENT_TARGET=${MACOSX_DEPLOYMENT_TARGET:-"10.12"}
 export MACOSX_DEPLOYMENT_TARGET
 
 FINALMESSAGE=""
